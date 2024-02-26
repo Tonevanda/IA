@@ -3,7 +3,10 @@ import pygame
 class Board:
     def __init__(self, size):
         self.size = size
-        self.board = [[0 for _ in range(size)] for _ in range(size)]
+        self.board = [[i for i in range(size)] for _ in range(size)]
+        self.start_x = 0
+        self.start_y = 0
+        self.cell_size = 50
         self.make_hexagon()
 
     def make_hexagon(self):
@@ -20,12 +23,12 @@ class Board:
                     self.board[i][j] = None
 
     def draw(self, window):
-        cell_size = 50
-        board_width = self.size * cell_size
-        board_height = self.size * cell_size
-        start_x = (window.get_width() - board_width) // 2
-        start_y = (window.get_height() - board_height) // 2
+        board_width = self.size * self.cell_size
+        board_height = self.size * self.cell_size
+        self.start_x = (window.get_width() - board_width) // 2
+        self.start_y = (window.get_height() - board_height) // 2
         for i, row in enumerate(self.board):
             for j, cell in enumerate(row):
                 if cell is not None:
-                    pygame.draw.rect(window, (255, 255, 255), (start_x + j * cell_size, start_y + i * cell_size, cell_size, cell_size))
+                    color = (255, 0, 0) if cell == "Clicked" else (255,255,255)
+                    pygame.draw.rect(window, color, (self.start_x + j * self.cell_size, self.start_y + i * self.cell_size, self.cell_size, self.cell_size))

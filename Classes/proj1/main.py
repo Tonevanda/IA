@@ -1,5 +1,6 @@
 import pygame
 from view.board import Board
+from controller.mouse import Mouse
 
 def main():
 
@@ -17,11 +18,19 @@ def main():
     board = Board(boardSize)
     board.draw(window)
 
+    # Create mouse
+    mouse = Mouse(0, 0)
+
     running = True
     while running:
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse.handleClick(event.pos, board)
+                board.draw(window)
+
         pygame.display.flip()
 
     pygame.quit()
