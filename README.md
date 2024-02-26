@@ -1,2 +1,3 @@
 # IA
- Artificial Intelligence class
+ 
+Artificial Intelligence class
