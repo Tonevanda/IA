@@ -1,6 +1,7 @@
 import pygame
 from view.board import Board
 from controller.mouse import Mouse
+from model.state import State
 
 def main():
 
@@ -23,7 +24,6 @@ def main():
 
     running = True
     while running:
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False

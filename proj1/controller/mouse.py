@@ -12,7 +12,8 @@ class Mouse:
 
         # Check if the click is within the board
         if 0 <= cell_x < board.size and 0 <= cell_y < board.size:
-            board.board[cell_y][cell_x] = 'Clicked'
+            board.board[cell_y][cell_x] = ['Orange']
+            
 
         # Check other conditions
         # ...
