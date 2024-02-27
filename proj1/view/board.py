@@ -38,8 +38,10 @@ class Board:
                 # not None -> exists, cell -> not empty, cell[0] -> color of the piece on top of the stack 
                 if cell is not None:
                     image = empty
-                    if cell and cell[0] == 'Orange':
+                    if cell and cell[-1] == 'Orange':
+                        print(cell)
                         image = orange
-                    elif cell and cell[0] == 'Blue':
+                    elif cell and cell[-1] == 'Blue':
+                        print(cell)
                         image = blue
                     window.blit(image, (self.start_x + j * self.cell_size, self.start_y + i * self.cell_size))

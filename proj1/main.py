@@ -15,6 +15,10 @@ def main():
     window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Focus")
 
+    # Create state
+    state = State()
+
+
     # Create and draw board
     board = Board(boardSize)
     board.draw(window)
@@ -28,7 +32,7 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                mouse.handleClick(event.pos, board)
+                mouse.handleClick(event.pos, board, state)
                 board.draw(window)
 
         pygame.display.flip()
