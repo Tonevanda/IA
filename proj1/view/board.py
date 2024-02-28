@@ -34,6 +34,17 @@ class Board:
             return self.board[y][x]
         return None
 
+    def possible_moves(self, pixel):
+        pos = self.get_pos(pixel)
+        x, y = pos
+        #you can only move as many pieces as the height of the stack
+        stack = self.check_stack(pos)
+        if stack is not None:
+            max=len(stack)
+            print("here")
+            #return a list of possible moves
+            return [(x,y,x+i,y+j) for i in range(-max,max+1) for j in range(-max,max+1) if (i,j)!=(0,0) and 0<=x+i<self.size and 0<=y+j<self.size and abs(j)<=max-abs(i) and self.board[y+j][x+i] != None]
+    
     def draw(self, window):
         board_width = self.size * self.cell_size
         board_height = self.size * self.cell_size
@@ -66,10 +77,13 @@ class Board:
         orange = pygame.transform.scale(orange, (self.cell_size, self.cell_size))
         blue = pygame.image.load("proj/proj1/sprites/blue.jpg")
         blue = pygame.transform.scale(blue, (self.cell_size, self.cell_size))
+        black = pygame.image.load("proj/proj1/sprites/black.jpg")
+        black = pygame.transform.scale(black, (self.cell_size, self.cell_size))
         if stack is not None:
-            print(stack)
-            for i in range(len(stack)):
-                if stack[i] == 'Orange':
+            for i in range(5):
+                if i >= len(stack):
+                    window.blit(black, (0 , window.get_height()- self.cell_size - i * self.cell_size))
+                elif stack[i] == 'Orange':
                     window.blit(orange, (0 , window.get_height()- self.cell_size - i * self.cell_size))
                 elif stack[i] == 'Blue':
                     window.blit(blue, (0, window.get_height()- self.cell_size - i * self.cell_size))
