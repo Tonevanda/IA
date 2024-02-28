@@ -34,6 +34,7 @@ def main():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse.handleClick(event.pos, board, state)
                 board.draw(window)
+                board.draw_stack(event.pos, window)
 
         pygame.display.flip()
 

@@ -22,6 +22,18 @@ class Board:
                 elif i >= self.size - cut and j > self.size - (cut - (self.size - i - 1)) - 1:
                     self.board[i][j] = None
 
+    def get_pos(self, pos):
+        x, y = pos
+        cell_x = (x - self.start_x) // self.cell_size
+        cell_y = (y - self.start_y) // self.cell_size
+        return (cell_x, cell_y)
+    
+    def check_stack(self, pos):
+        x, y = pos
+        if 0 <= x and x < self.size and 0 <= y and y < self.size:
+            return self.board[y][x]
+        return None
+
     def draw(self, window):
         board_width = self.size * self.cell_size
         board_height = self.size * self.cell_size
@@ -39,9 +51,28 @@ class Board:
                 if cell is not None:
                     image = empty
                     if cell and cell[-1] == 'Orange':
-                        print(cell)
+                        #print(cell)
                         image = orange
                     elif cell and cell[-1] == 'Blue':
-                        print(cell)
+                        #print(cell)
                         image = blue
                     window.blit(image, (self.start_x + j * self.cell_size, self.start_y + i * self.cell_size))
+    
+    def draw_stack(self,pixel,window):
+        pos = self.get_pos(pixel)
+        stack = self.check_stack(pos)
+        print(stack)
+        orange = pygame.image.load("proj/proj1/sprites/orange.jpg")
+        orange = pygame.transform.scale(orange, (self.cell_size, self.cell_size))
+        blue = pygame.image.load("proj/proj1/sprites/blue.jpg")
+        blue = pygame.transform.scale(blue, (self.cell_size, self.cell_size))
+        if stack is not None:
+            print(stack)
+            for i in range(len(stack)):
+                if stack[i] == 'Orange':
+                    window.blit(orange, (0 , window.get_height()- self.cell_size - i * self.cell_size))
+                elif stack[i] == 'Blue':
+                    window.blit(blue, (0, window.get_height()- self.cell_size - i * self.cell_size))
+        else:
+            print("No stack at this position")
+            return None
