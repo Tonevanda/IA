@@ -21,6 +21,10 @@ class Board:
                     self.board[i][j] = None
                 elif i >= self.size - cut and j > self.size - (cut - (self.size - i - 1)) - 1:
                     self.board[i][j] = None
+        self.board[1][1]=['Orange']
+        self.board[1][2]=['Orange']
+        self.board[2][1]=['Blue']
+        self.board[2][2]=['Blue']
 
     #takes a pixel and returns the position of the corresponding cell
     def get_pos(self, pixel):
@@ -48,7 +52,7 @@ class Board:
             # the condition 0<=x+i<self.size and 0<=y+j<self.size ensures that the move is within the board
             # the condition abs(j)<=max-abs(i) ensures that that diagonal moves aren't used (because they can't)
             # the condition self.board[y+j][x+i] != None ensures that the move is inside the hexagon
-            return [(x,y,x+i,y+j) for i in range(-max,max+1) for j in range(-max,max+1) if (i,j)!=(0,0) and 0<=x+i<self.size and 0<=y+j<self.size and abs(j)<=max-abs(i) and self.board[y+j][x+i] != None]
+            return [(x+i,y+j) for i in range(-max,max+1) for j in range(-max,max+1) if (i,j)!=(0,0) and 0<=x+i<self.size and 0<=y+j<self.size and abs(j)<=max-abs(i) and self.board[y+j][x+i] != None]
     
     def draw(self, window):
         board_width = self.size * self.cell_size

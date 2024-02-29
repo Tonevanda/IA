@@ -35,7 +35,6 @@ def main():
                 mouse.handleClick(event.pos, board, state)
                 board.draw(window)
                 board.draw_stack(event.pos, window)
-                print(board.possible_moves(event.pos))
 
         pygame.display.flip()
 
