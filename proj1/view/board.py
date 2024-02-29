@@ -22,18 +22,21 @@ class Board:
                 elif i >= self.size - cut and j > self.size - (cut - (self.size - i - 1)) - 1:
                     self.board[i][j] = None
 
-    def get_pos(self, pos):
-        x, y = pos
+    #takes a pixel and returns the position of the corresponding cell
+    def get_pos(self, pixel):
+        x, y = pixel
         cell_x = (x - self.start_x) // self.cell_size
         cell_y = (y - self.start_y) // self.cell_size
         return (cell_x, cell_y)
     
+    #takes a position and returns the stack at that position
     def check_stack(self, pos):
         x, y = pos
         if 0 <= x and x < self.size and 0 <= y and y < self.size:
             return self.board[y][x]
         return None
 
+    #takes a pixel and returns a list of possible moves in the corresponding cell
     def possible_moves(self, pixel):
         pos = self.get_pos(pixel)
         x, y = pos
@@ -41,8 +44,10 @@ class Board:
         stack = self.check_stack(pos)
         if stack is not None:
             max=len(stack)
-            print("here")
-            #return a list of possible moves
+            # i and j are the offsets from the current position. They vary between -max and max+1
+            # the condition 0<=x+i<self.size and 0<=y+j<self.size ensures that the move is within the board
+            # the condition abs(j)<=max-abs(i) ensures that that diagonal moves aren't used (because they can't)
+            # the condition self.board[y+j][x+i] != None ensures that the move is inside the hexagon
             return [(x,y,x+i,y+j) for i in range(-max,max+1) for j in range(-max,max+1) if (i,j)!=(0,0) and 0<=x+i<self.size and 0<=y+j<self.size and abs(j)<=max-abs(i) and self.board[y+j][x+i] != None]
     
     def draw(self, window):
@@ -69,6 +74,7 @@ class Board:
                         image = blue
                     window.blit(image, (self.start_x + j * self.cell_size, self.start_y + i * self.cell_size))
     
+    #draws the stack at the given position in the bottom left corner of the screen
     def draw_stack(self,pixel,window):
         pos = self.get_pos(pixel)
         stack = self.check_stack(pos)
