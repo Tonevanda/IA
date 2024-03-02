@@ -18,11 +18,10 @@ def main():
     # Create state
     state = State()
 
-
     # Create and draw board
     board = Board(boardSize)
     board.draw(window)
-
+    board.draw_stack2(window, state)
     # Create mouse
     mouse = Mouse(0, 0)
 
@@ -32,9 +31,11 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                mouse.handleClick(event.pos, board, state)
+                mouse.handleClick(event.pos, board, state, window)
                 board.draw(window)
                 board.draw_stack(event.pos, window)
+                board.draw_stack2(window, state)
+                
 
         pygame.display.flip()
 

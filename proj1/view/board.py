@@ -7,6 +7,8 @@ class Board:
         self.start_x = 0
         self.start_y = 0
         self.cell_size = 50
+        self.orangeStack = ['Orange', 'Orange', 'Orange', 'Orange', 'Orange']
+        self.blueStack = ['Blue', 'Blue', 'Blue', 'Blue', 'Blue']
         self.make_hexagon()
 
     def make_hexagon(self):
@@ -23,14 +25,18 @@ class Board:
                     self.board[i][j] = None
         self.board[1][1]=['Orange']
         self.board[1][2]=['Orange']
+        self.board[1][3]=['Orange']
         self.board[2][1]=['Blue']
         self.board[2][2]=['Blue']
+        self.board[2][3]=['Blue']
 
     #takes a pixel and returns the position of the corresponding cell
     def get_pos(self, pixel):
         x, y = pixel
         cell_x = (x - self.start_x) // self.cell_size
         cell_y = (y - self.start_y) // self.cell_size
+        if(cell_x>=self.size or cell_y>=self.size or cell_x<0 or cell_y<0):
+            return (-1,-1)
         return (cell_x, cell_y)
     
     #takes a position and returns the stack at that position
@@ -82,7 +88,17 @@ class Board:
     def draw_stack(self,pixel,window):
         pos = self.get_pos(pixel)
         stack = self.check_stack(pos)
-        print(stack)
+        self.generic_draw(stack, window, 0)
+
+    #same as before but bottom right corner
+    def draw_stack2(self,window,state):
+        if(state.current_player == "Orange"):
+            stack = self.orangeStack
+        else:
+            stack = self.blueStack
+        self.generic_draw(stack, window, window.get_width()-self.cell_size)
+    
+    def generic_draw(self, stack, window, pos):
         orange = pygame.image.load("proj/proj1/sprites/orange.jpg")
         orange = pygame.transform.scale(orange, (self.cell_size, self.cell_size))
         blue = pygame.image.load("proj/proj1/sprites/blue.jpg")
@@ -92,11 +108,11 @@ class Board:
         if stack is not None:
             for i in range(5):
                 if i >= len(stack):
-                    window.blit(black, (0 , window.get_height()- self.cell_size - i * self.cell_size))
+                    window.blit(black, (pos , window.get_height()- self.cell_size - i * self.cell_size))
                 elif stack[i] == 'Orange':
-                    window.blit(orange, (0 , window.get_height()- self.cell_size - i * self.cell_size))
+                    window.blit(orange, (pos , window.get_height()- self.cell_size - i * self.cell_size))
                 elif stack[i] == 'Blue':
-                    window.blit(blue, (0, window.get_height()- self.cell_size - i * self.cell_size))
+                    window.blit(blue, (pos , window.get_height()- self.cell_size - i * self.cell_size))
         else:
             print("No stack at this position")
             return None
