@@ -31,7 +31,7 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                mouse.handleClick(event.pos, board, state, window)
+                mouse.handle_click(event.pos, board, state, window)
                 board.draw(window)
                 board.draw_stack(event.pos, window)
                 board.draw_stack2(window, state)

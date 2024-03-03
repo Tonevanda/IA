@@ -30,7 +30,7 @@ class Board:
         #self.board[2][2]=['Blue']
         #self.board[2][3]=['Blue']
 
-    #takes a pixel and returns the position of the corresponding cell
+    # Takes a pixel and returns the position of the corresponding cell
     def get_pos(self, pixel):
         x, y = pixel
         cell_x = (x - self.start_x) // self.cell_size
@@ -39,19 +39,19 @@ class Board:
             return (-1,-1)
         return (cell_x, cell_y)
     
-    #takes a position and returns the stack at that position
-    def check_stack(self, pos):
+    # Takes a position and returns the stack at that position
+    def get_stack(self, pos):
         x, y = pos
         if 0 <= x and x < self.size and 0 <= y and y < self.size:
             return self.board[y][x]
         return None
 
-    #takes a pixel and returns a list of possible moves in the corresponding cell
+    # Takes a pixel and returns a list of possible moves in the corresponding cell
     def possible_moves(self, pixel):
         pos = self.get_pos(pixel)
         x, y = pos
         #you can only move as many pieces as the height of the stack
-        stack = self.check_stack(pos)
+        stack = self.get_stack(pos)
         if stack is not None:
             max=len(stack)
             # i and j are the offsets from the current position. They vary between -max and max+1
@@ -87,7 +87,7 @@ class Board:
     #draws the stack at the given position in the bottom left corner of the screen
     def draw_stack(self,pixel,window):
         pos = self.get_pos(pixel)
-        stack = self.check_stack(pos)
+        stack = self.get_stack(pos)
         self.generic_draw(stack, window, 0)
 
     #same as before but bottom right corner
