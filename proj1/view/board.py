@@ -65,9 +65,9 @@ class Board:
         board_height = self.size * self.cell_size
         self.start_x = (window.get_width() - board_width) // 2
         self.start_y = (window.get_height() - board_height) // 2
-        orange = pygame.image.load("proj/proj1/sprites/orange.jpg")  
-        blue = pygame.image.load("proj/proj1/sprites/blue.jpg")
-        empty = pygame.image.load("proj/proj1/sprites/black.jpg")  # Load the image for default cells
+        orange = pygame.image.load("../proj1/sprites/orange.jpg")  
+        blue = pygame.image.load("../proj1/sprites/blue.jpg")
+        empty = pygame.image.load("../proj1/sprites/black.jpg")  # Load the image for default cells
         orange = pygame.transform.scale(orange, (self.cell_size, self.cell_size))
         blue = pygame.transform.scale(blue, (self.cell_size, self.cell_size))
         empty = pygame.transform.scale(empty, (self.cell_size, self.cell_size))
@@ -99,11 +99,11 @@ class Board:
         self.generic_draw(stack, window, window.get_width()-self.cell_size)
     
     def generic_draw(self, stack, window, pos):
-        orange = pygame.image.load("proj/proj1/sprites/orange.jpg")
+        orange = pygame.image.load("../proj1/sprites/orange.jpg")
         orange = pygame.transform.scale(orange, (self.cell_size, self.cell_size))
-        blue = pygame.image.load("proj/proj1/sprites/blue.jpg")
+        blue = pygame.image.load("../proj1/sprites/blue.jpg")
         blue = pygame.transform.scale(blue, (self.cell_size, self.cell_size))
-        black = pygame.image.load("proj/proj1/sprites/black.jpg")
+        black = pygame.image.load("../proj1/sprites/black.jpg")
         black = pygame.transform.scale(black, (self.cell_size, self.cell_size))
         if stack is not None:
             for i in range(5):
