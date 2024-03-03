@@ -25,7 +25,6 @@ class Mouse:
                     state.current_cell = None
         
     # Checks if the click is in the corner of the window
-    # TODO: Isto não está a fazer nada
     def clicked_corner(self, pixel, window, board):
         x, y = pixel
         if x > window.get_width()-board.cell_size and y > window.get_height()-(board.cell_size*5):
