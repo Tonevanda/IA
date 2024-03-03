@@ -7,8 +7,8 @@ class Board:
         self.start_x = 0
         self.start_y = 0
         self.cell_size = 50
-        self.orangeStack = ['Orange', 'Orange', 'Orange', 'Orange', 'Orange']
-        self.blueStack = ['Blue', 'Blue', 'Blue', 'Blue', 'Blue']
+        self.orangeStack = ['Orange']
+        self.blueStack = ['Blue']
         self.make_hexagon()
 
     def make_hexagon(self):
@@ -24,11 +24,11 @@ class Board:
                 elif i >= self.size - cut and j > self.size - (cut - (self.size - i - 1)) - 1:
                     self.board[i][j] = None
         self.board[1][1]=['Orange']
-        self.board[1][2]=['Orange']
-        self.board[1][3]=['Orange']
+        #self.board[1][2]=['Orange']
+        #self.board[1][3]=['Orange']
         self.board[2][1]=['Blue']
-        self.board[2][2]=['Blue']
-        self.board[2][3]=['Blue']
+        #self.board[2][2]=['Blue']
+        #self.board[2][3]=['Blue']
 
     #takes a pixel and returns the position of the corresponding cell
     def get_pos(self, pixel):

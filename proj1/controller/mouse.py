@@ -13,7 +13,7 @@ class Mouse:
             state.current_possible_moves = None
             state.current_cell = None
         else:    
-            print(cell_x,cell_y)
+            #print(cell_x,cell_y)
             if 0 <= cell_x < board.size and 0 <= cell_y < board.size:
                 if state.current_possible_moves == None and state.current_cell != (0,0):
                     print("here")

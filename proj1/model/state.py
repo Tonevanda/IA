@@ -25,10 +25,10 @@ class State:
         elif(board.board[ys][xs]!= [] and board.board[ys][xs][-1]==self.current_player and pos in self.current_possible_moves):
             board.board[y][x].extend(board.board[ys][xs])
             board.board[ys][xs] = []
-            #if the stack at the destination is higher than 5, the pieces are removed until it is 5 high
-            #and if any of the pieces removed are the current player's color, they are added to the stack of the current player
             self.stack_handling(board, x, y)
 
+    #if the stack at the destination is higher than 5, the pieces are removed until it is 5 high
+    #and if any of the pieces removed are the current player's color, they are added to the stack of the current player
     def stack_handling(self, board, x, y):
         while len(board.board[y][x]) > 5:
                 if board.board[y][x].pop(0) == self.current_player:
@@ -39,8 +39,17 @@ class State:
             
         if self.current_player == self.player1:
             self.current_player = self.player2
+            if(self.check_board(board) and board.blueStack == []):
+                print('Player 1 wins')
         else:
             self.current_player = self.player1
+            if(self.check_board(board) and board.orangeStack == []):
+                print('Player 2 wins')
 
-
-        
+    # checks if the board has any pieces of the player whose turn it is now
+    def check_board(self, board):
+        for i in range(board.size):
+            for j in range(board.size):
+                if board.board[i][j] != None and board.board[i][j] != [] and board.board[i][j][-1] == self.current_player:
+                    return False
+        return True
