@@ -1,5 +1,6 @@
 import pygame
 from model.state import State
+
 class Mouse:
     def __init__(self, x, y):
         self.x = x

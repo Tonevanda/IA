@@ -1,5 +1,6 @@
 import pygame
-from view.board import Board
+from view.boardView import BoardView
+from model.board import Board
 from controller.mouse import Mouse
 from model.state import State
 
@@ -18,12 +19,16 @@ def main():
     # Create state
     state = State()
 
-    # Create and draw board
+    # Create board model and board view
     board = Board(boardSize)
-    board.draw(window)
-    board.draw_stack2(window, state)
+    boardView = BoardView(board)
     # Create mouse
     mouse = Mouse(0, 0)
+
+    # Draw board
+    window.fill((255, 255, 255))
+    boardView.draw(window)
+    boardView.draw_stack2(window, state)
 
     running = True
     while running:
@@ -32,9 +37,9 @@ def main():
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse.handle_click(event.pos, board, state, window)
-                board.draw(window)
-                board.draw_stack(event.pos, window)
-                board.draw_stack2(window, state)
+                boardView.draw(window)
+                boardView.draw_stack(event.pos, window)
+                boardView.draw_stack2(window, state)
                 
 
         pygame.display.flip()
