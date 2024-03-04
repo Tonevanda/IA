@@ -14,7 +14,7 @@ class Mouse:
             state.current_possible_moves = None
             state.current_cell = None
         else:    
-            if 0 <= cell_x < board.size and 0 <= cell_y < board.size:
+            if 0 <= cell_x < board.size and 0 <= cell_y < board.size and board.board[cell_y][cell_x] != None:
                 if state.current_possible_moves == None and state.current_cell != (0,0):
                     print("here")
                     state.current_possible_moves = board.possible_moves(pixel)
@@ -23,6 +23,9 @@ class Mouse:
                     state.make_move((cell_x,cell_y), board)
                     state.current_possible_moves = None
                     state.current_cell = None
+            else:
+                state.current_possible_moves = None
+                state.current_cell = None
         
     # Checks if the click is in the corner of the window
     def clicked_corner(self, pixel, window, board):
