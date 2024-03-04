@@ -1,6 +1,4 @@
 import pygame
-from model.state import State
-from model.board import Board
 
 class BoardView:
     def __init__(self, board_model):

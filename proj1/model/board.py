@@ -13,22 +13,33 @@ class Board:
         return row == 0 or row == self.size-1 or col == 0 or col == self.size-1
 
     def make_board(self):
-        counter = 0
+        column_counter = 0
+        row_counter = 0
         current_color = 'Orange'
+
         for row in range(self.size):
+
             for col in range(self.size):
                 if(self.is_on_edge(row, col)):
                     self.board[row][col] = []
                 else:
+                    
                     self.board[row][col] = [current_color]
-                    counter += 1
-                    if(counter % 2 == 0):
+                    column_counter += 1
+                    if(column_counter % 2 == 0):
                         if(current_color == 'Orange'):
                             current_color = 'Blue'
                         else:
                             current_color = 'Orange'
+
+            row_counter += 1
+            if(row_counter % 2 == 0):
+                current_color = 'Blue'
+            else:
+                current_color = 'Orange'
+
         self.make_hexagon()
-        
+
                 
     def make_hexagon(self):
         cut = int(self.size * 0.25)
