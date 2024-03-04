@@ -1,4 +1,6 @@
-class Mouse:
+import pygame
+
+class GameController:
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -30,4 +32,8 @@ class Mouse:
                 state.current_possible_moves = None
                 state.current_cell = None
         
-    
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_pos = pygame.mouse.get_pos()
+            return mouse_pos
+        return None
