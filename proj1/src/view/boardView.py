@@ -11,9 +11,9 @@ class BoardView:
         self.board.start_x = (window.get_width() - board_width) // 2
         self.board.start_y = (window.get_height() - board_height) // 2
 
-        orange = pygame.image.load("../proj1/sprites/orange.jpg")  
-        blue = pygame.image.load("../proj1/sprites/blue.jpg")
-        empty = pygame.image.load("../proj1/sprites/black.jpg")  # Load the image for default cells
+        orange = pygame.image.load("../resources/orange.jpg")  
+        blue = pygame.image.load("../resources/blue.jpg")
+        empty = pygame.image.load("../resources/black.jpg")
 
         orange = pygame.transform.scale(orange, (self.board.cell_size, self.board.cell_size))
         blue = pygame.transform.scale(blue, (self.board.cell_size, self.board.cell_size))
@@ -25,10 +25,8 @@ class BoardView:
                 if cell is not None:
                     image = empty
                     if cell and cell[-1] == 'Orange':
-                        #print(cell)
                         image = orange
                     elif cell and cell[-1] == 'Blue':
-                        #print(cell)
                         image = blue
                     window.blit(image, (self.board.start_x + j * self.board.cell_size, self.board.start_y + i * self.board.cell_size))
     
@@ -42,18 +40,19 @@ class BoardView:
     #same as before but bottom right corner
     def draw_stack2(self,window,state):
         if(state.current_player == "Orange"):
-            stack = self.board.orangeStack
+            stack = self.board.orange_stack
         else:
-            stack = self.board.blueStack
+            stack = self.board.blue_stack
         self.generic_draw(stack, window, window.get_width()-self.board.cell_size)
     
     def generic_draw(self, stack, window, pos):
-        orange = pygame.image.load("../proj1/sprites/orange.jpg")
+        orange = pygame.image.load("../resources/orange.jpg")  
         orange = pygame.transform.scale(orange, (self.board.cell_size, self.board.cell_size))
-        blue = pygame.image.load("../proj1/sprites/blue.jpg")
+        blue = pygame.image.load("../resources/blue.jpg")
         blue = pygame.transform.scale(blue, (self.board.cell_size, self.board.cell_size))
-        black = pygame.image.load("../proj1/sprites/black.jpg")
+        black = pygame.image.load("../resources/black.jpg")
         black = pygame.transform.scale(black, (self.board.cell_size, self.board.cell_size))
+
         if stack is not None:
             for i in range(5):
                 if i >= len(stack):

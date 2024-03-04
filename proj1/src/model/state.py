@@ -15,9 +15,9 @@ class State:
         if (self.current_cell == (0,0)):
             board.board[y][x].append(self.current_player)
             if self.current_player == 'Orange':
-                board.orangeStack.pop()
+                board.orange_stack.pop()
             else:
-                board.blueStack.pop()
+                board.blue_stack.pop()
             self.stack_handling(board, x, y)
 
         #if the move is valid, the pieces are moved and the turn changes
@@ -33,17 +33,17 @@ class State:
         while len(board.board[y][x]) > 5:
                 if board.board[y][x].pop(0) == self.current_player:
                     if self.current_player == self.player1:
-                        board.orangeStack.append('Orange')
+                        board.orange_stack.append('Orange')
                     else:
-                        board.blueStack.append('Blue')
+                        board.blue_stack.append('Blue')
             
         if self.current_player == self.player1:
             self.current_player = self.player2
-            if(self.check_board(board) and board.blueStack == []):
+            if(self.check_board(board) and board.blue_stack == []):
                 print('Player 1 wins')
         else:
             self.current_player = self.player1
-            if(self.check_board(board) and board.orangeStack == []):
+            if(self.check_board(board) and board.orange_stack == []):
                 print('Player 2 wins')
 
     # checks if the board has any pieces of the player whose turn it is now

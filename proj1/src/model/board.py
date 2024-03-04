@@ -5,17 +5,18 @@ class Board:
         self.start_x = 0
         self.start_y = 0
         self.cell_size = 50
-        self.orangeStack = ['Orange']
-        self.blueStack = ['Blue']
+        self.orange_stack = []
+        self.blue_stack = []
         self.make_board()
 
+    # Checks if the cell is on the edge of the board
     def is_on_edge(self, row, col):
         return row == 0 or row == self.size-1 or col == 0 or col == self.size-1
 
     def make_board(self):
         column_counter = 0
         row_counter = 0
-        current_color = 'Orange'
+        current_color = 'Orange' # Orange starts
 
         for row in range(self.size):
 
@@ -23,7 +24,6 @@ class Board:
                 if(self.is_on_edge(row, col)):
                     self.board[row][col] = []
                 else:
-                    
                     self.board[row][col] = [current_color]
                     column_counter += 1
                     if(column_counter % 2 == 0):

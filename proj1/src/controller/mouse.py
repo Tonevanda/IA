@@ -1,10 +1,12 @@
-import pygame
-from model.state import State
-
 class Mouse:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+        
+    # Checks if the click is in the corner of the window
+    def clicked_corner(self, pixel, window, board):
+        x, y = pixel
+        return x > window.get_width()-board.cell_size and y > window.get_height()-(board.cell_size*5)
 
     def handle_click(self, pixel, board, state, window):
         (cell_x,cell_y) = board.get_pos(pixel)
@@ -28,9 +30,4 @@ class Mouse:
                 state.current_possible_moves = None
                 state.current_cell = None
         
-    # Checks if the click is in the corner of the window
-    def clicked_corner(self, pixel, window, board):
-        x, y = pixel
-        if x > window.get_width()-board.cell_size and y > window.get_height()-(board.cell_size*5):
-            return True
-        return False
+    
