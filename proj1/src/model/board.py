@@ -99,6 +99,7 @@ class Board:
             else:
                 board.blue_stack.pop()
             self.stack_handling(board, x, y)
+            self.game_state.next_turn()
 
         #if the move is valid, the pieces are moved and the turn changes
         #the move is valid if the stack at the current position is not empty, the top piece is the current player's color, and the destination is in the list of possible moves
@@ -106,6 +107,7 @@ class Board:
             board.board[y][x].extend(board.board[ys][xs])
             board.board[ys][xs] = []
             self.stack_handling(board, x, y)
+            self.game_state.next_turn()
 
     #if the stack at the destination is higher than 5, the pieces are removed until it is 5 high
     #and if any of the pieces removed are the current player's color, they are added to the stack of the current player
