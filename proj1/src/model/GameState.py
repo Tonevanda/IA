@@ -6,9 +6,9 @@ from view.GameView import GameView
 class GameState:
     def __init__(self, size, orange, blue):
         self.board = Board(size)
-        self.orange = orange
-        self.blue = blue
-        self.gameController = GameController(0, 0)
+        self.orange = orange    # Player 1
+        self.blue = blue        # Player 2
+        self.gameController = GameController(self, 0, 0)
         self.gameView = GameView(self.board)
         """
         self.player1 = 'Orange'
@@ -19,5 +19,5 @@ class GameState:
         """
 
     def run(self, event, window):
-        self.gameController.handle_event(event)
+        self.gameController.handle_event(event, window)
         self.gameView.draw(window)

@@ -9,6 +9,12 @@ class Board:
         self.blue_stack = []
         self.make_board()
 
+        self.current_possible_moves = None
+        self.current_cell = None
+        self.player1 = 'Orange'
+        self.player2 = 'Blue'
+        self.current_player = self.player1
+
     # Checks if the cell is on the edge of the board
     def is_on_edge(self, row, col):
         return row == 0 or row == self.size-1 or col == 0 or col == self.size-1
