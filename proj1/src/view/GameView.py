@@ -11,4 +11,5 @@ class GameView:
         window.fill((255, 255, 255))
         self.board_view.draw(window)
         self.orange_view.draw(window)
+        self.blue_view.draw(window)
 
