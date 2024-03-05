@@ -19,5 +19,7 @@ class GameState:
         """
 
     def run(self, event, window):
+        # TODO: remove window
         self.gameController.handle_event(event, window)
-        self.gameView.draw(window)
+        # TODO: remove event.pos
+        self.gameView.draw(window, event.pos)
