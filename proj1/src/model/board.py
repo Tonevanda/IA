@@ -5,16 +5,16 @@ class Board:
         self.board = [[None for _ in range(size)] for _ in range(size)]
         self.make_board()
         self.selected_cell = None
-        
-        self.orange_stack = []
-        self.blue_stack = []
-        
 
         self.current_possible_moves = None
         
+        """
+        self.orange_stack = []
+        self.blue_stack = []
         self.player1 = 'Orange'
         self.player2 = 'Blue'
         self.current_player = self.player1
+        """
 
     def get_size(self):
         return self.size
@@ -71,6 +71,9 @@ class Board:
             return self.board[y][x]
         return None
 
+    def get_selected_cell(self):
+        return self.selected_cell
+
     def get_selected_stack(self):
         if self.selected_cell is not None:
             return self.get_stack(self.selected_cell)
@@ -92,46 +95,40 @@ class Board:
     def make_move(self, pos, board):
         x, y = pos
         xs, ys = self.selected_cell
-        if (self.selected_cell == (0,0)):
-            self.board[y][x].append(self.current_player)
-            if self.current_player == 'Orange':
-                board.orange_stack.pop()
-            else:
-                board.blue_stack.pop()
+        current_player = self.game_state.get_current_player().get_color()
+        if (self.selected_cell == (0,0)): # Selected from own stack
+            self.board[y][x].append(current_player)
+            self.game_state.remove_from_player_stack()
             self.stack_handling(board, x, y)
-            self.game_state.next_turn()
 
         #if the move is valid, the pieces are moved and the turn changes
         #the move is valid if the stack at the current position is not empty, the top piece is the current player's color, and the destination is in the list of possible moves
-        elif(board.board[ys][xs]!= [] and board.board[ys][xs][-1]==self.current_player and pos in self.current_possible_moves):
+        elif(board.board[ys][xs]!= [] and board.board[ys][xs][-1]==self.game_state.get_current_player().get_color() and pos in self.current_possible_moves):
             board.board[y][x].extend(board.board[ys][xs])
             board.board[ys][xs] = []
             self.stack_handling(board, x, y)
-            self.game_state.next_turn()
+            
 
     #if the stack at the destination is higher than 5, the pieces are removed until it is 5 high
     #and if any of the pieces removed are the current player's color, they are added to the stack of the current player
     def stack_handling(self, board, x, y):
         while len(board.board[y][x]) > 5:
-                if board.board[y][x].pop(0) == self.current_player:
-                    if self.current_player == self.player1:
-                        board.orange_stack.append('Orange')
-                    else:
-                        board.blue_stack.append('Blue')
-            
-        if self.current_player == self.player1:
-            self.current_player = self.player2
-            if(self.check_board(board) and board.blue_stack == []):
-                print('Player 1 wins')
-        else:
-            self.current_player = self.player1
-            if(self.check_board(board) and board.orange_stack == []):
-                print('Player 2 wins')
+                if board.board[y][x].pop(0) == self.game_state.get_current_player().get_color():
+                    self.game_state.add_to_player_stack()
 
-    # checks if the board has any pieces of the player whose turn it is now
-    def check_board(self, board):
-        for i in range(board.size):
-            for j in range(board.size):
-                if board.board[i][j] != None and board.board[i][j] != [] and board.board[i][j][-1] == self.current_player:
+        if(not self.game_state.did_win()):
+            self.game_state.next_turn()  
+
+    # Given a cell, returns if it belongs to a given player
+    def is_player_piece(self, cell, player):
+        (i, j) = cell
+        color = player.get_color()
+        return self.board[i][j] != None and self.board[i][j] != [] and self.board[i][j][-1] == color
+
+    # Checks if the board has any pieces of a given player
+    def verify_lost(self, player):
+        for i in range(self.size):
+            for j in range(self.size):
+                if self.is_player_piece((i, j), player):
                     return False
         return True

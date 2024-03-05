@@ -9,7 +9,6 @@ def pygame_setup():
     return window
 
 def start(window):
-    # Create state
     state = State()
     
     running = True
@@ -25,40 +24,8 @@ def start(window):
     pygame.quit()
 
 def main():
-    # Pygame setup
     window = pygame_setup()
     start(window)
-    
-    """
-    # Create state
-    GameState = GameState()
-
-    # Create board model and board view
-    board = Board(boardSize)
-    boardView = BoardView(board)
-    # Create mouse
-    mouse = GameController(0, 0)
-
-    # Draw board
-    boardView.draw(window)
-    boardView.draw_stack2(window, GameState)
-
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                mouse.handle_click(event.pos, board, GameState, window)
-                boardView.draw(window)
-                boardView.draw_stack(event.pos, window)
-                boardView.draw_stack2(window, GameState)
-                
-
-        pygame.display.flip()
-
-    pygame.quit()
-    """
 
 if __name__ == "__main__":
     main()

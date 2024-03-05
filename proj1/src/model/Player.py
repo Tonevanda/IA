@@ -16,8 +16,8 @@ class Player:
     def get_stack_pieces(self):
         return self.stack_pieces
     
-    def add_stack_piece(self, piece):
-        self.stack_pieces.append(piece)
+    def add_stack_piece(self):
+        self.stack_pieces.append(self.color)
 
     def remove_stack_piece(self):
         return self.stack_pieces.pop(0)

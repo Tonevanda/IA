@@ -16,7 +16,7 @@ class State:
 
     def start_game(self, size, Orange, Blue):
         if isinstance(self.current_state, SelectMenuState):
-            self.current_state = GameState(size, Orange, Blue)
+            self.current_state = GameState(self, size, Orange, Blue)
 
     def to_end(self):
         if isinstance(self.current_state, GameState):
