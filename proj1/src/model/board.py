@@ -2,18 +2,21 @@ class Board:
     def __init__(self, size):
         self.size = size
         self.board = [[None for _ in range(size)] for _ in range(size)]
-        self.start_x = 0
-        self.start_y = 0
-        self.cell_size = 50
+        self.make_board()
+        self.selected_cell = None
+        
         self.orange_stack = []
         self.blue_stack = []
-        self.make_board()
+        
 
         self.current_possible_moves = None
-        self.current_cell = None
+        
         self.player1 = 'Orange'
         self.player2 = 'Blue'
         self.current_player = self.player1
+
+    def get_size(self):
+        return self.size
 
     # Checks if the cell is on the edge of the board
     def is_on_edge(self, row, col):
@@ -60,15 +63,6 @@ class Board:
                 elif i >= self.size - cut and j > self.size - (cut - (self.size - i - 1)) - 1:
                     self.board[i][j] = None
 
-    # Takes a pixel and returns the position of the corresponding cell
-    def get_pos(self, pixel):
-        x, y = pixel
-        cell_x = (x - self.start_x) // self.cell_size
-        cell_y = (y - self.start_y) // self.cell_size
-        if(cell_x>=self.size or cell_y>=self.size or cell_x<0 or cell_y<0):
-            return (-1,-1)
-        return (cell_x, cell_y)
-
     # Takes a position and returns the stack at that position
     def get_stack(self, pos):
         x, y = pos
@@ -76,12 +70,16 @@ class Board:
             return self.board[y][x]
         return None
 
-    # Takes a pixel and returns a list of possible moves in the corresponding cell
-    def possible_moves(self, pixel):
-        pos = self.get_pos(pixel)
-        x, y = pos
+    def get_selected_stack(self):
+        if self.selected_cell is not None:
+            return self.get_stack(self.selected_cell)
+        return None
+
+    # Takes a cell and returns a list of possible moves in the corresponding cell
+    def possible_moves(self, cell):
+        x, y = cell
         #you can only move as many pieces as the height of the stack
-        stack = self.get_stack(pos)
+        stack = self.get_stack(cell)
         if stack is not None:
             max=len(stack)
             # i and j are the offsets from the current position. They vary between -max and max+1
@@ -92,8 +90,8 @@ class Board:
         
     def make_move(self, pos, board):
         x, y = pos
-        xs, ys = self.current_cell
-        if (self.current_cell == (0,0)):
+        xs, ys = self.selected_cell
+        if (self.selected_cell == (0,0)):
             self.board[y][x].append(self.current_player)
             if self.current_player == 'Orange':
                 board.orange_stack.pop()

@@ -10,6 +10,9 @@ class Player:
     def get_color(self):
         return self.color
     
+    def get_stack_count(self):
+        return len(self.stack_pieces)
+    
     def get_stack_pieces(self):
         return self.stack_pieces
     

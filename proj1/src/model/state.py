@@ -8,10 +8,7 @@ class State:
         self.current_state = MainMenuState(self)
 
     def run(self, event, window):
-        if(self.current_state == None):
-            return True
         self.current_state.run(event, window)
-        return False
 
     def to_select_menu(self):
         if isinstance(self.current_state, MainMenuState):

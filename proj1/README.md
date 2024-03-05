@@ -3,7 +3,6 @@
 ## Dependencies
 
 - Pygame
-- Pygame_textinput (pip install pygame-textinput)
 
 ## Rules
 
