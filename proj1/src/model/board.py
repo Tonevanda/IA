@@ -1,5 +1,6 @@
 class Board:
-    def __init__(self, size):
+    def __init__(self, game_state, size):
+        self.game_state = game_state
         self.size = size
         self.board = [[None for _ in range(size)] for _ in range(size)]
         self.make_board()

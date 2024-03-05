@@ -6,13 +6,13 @@ from constants import CELL_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT
 
 class GameState:
     def __init__(self, size, orange, blue):
-        self.board = Board(size)
+        self.board = Board(self, size)
         self.orange = orange    # Player 1
         self.blue = blue        # Player 2
         self.gameController = GameController(self)
 
         starting_cell = self.get_starting_cell()
-        self.gameView = GameView(self.board, starting_cell, self.orange, self.blue)
+        self.gameView = GameView(self, self.board, starting_cell, self.orange, self.blue)
 
         self.turn = 1
         """
@@ -48,6 +48,7 @@ class GameState:
         return self.orange if self.turn % 2 == 1 else self.blue
 
     def next_turn(self):
+        print("Next turn")
         self.turn += 1
 
     def run(self, event, window):
