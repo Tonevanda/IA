@@ -1,68 +1,92 @@
+from config import PIECE_BLUE, PIECE_ORANGE, PIECE_EMPTY, PIECE_NONE, STACK_MASK
+import numpy as np
+
 class Board:
     def __init__(self, game_state, size):
         self.game_state = game_state
         self.size = size
-        self.board = [[None for _ in range(size)] for _ in range(size)]
+        self.board = 0b0
         self.make_board()
+        
         self.selected_cell = None
 
         self.current_possible_moves = None
-        
-        """
-        self.orange_stack = []
-        self.blue_stack = []
-        self.player1 = 'Orange'
-        self.player2 = 'Blue'
-        self.current_player = self.player1
-        """
-
+    
     def get_size(self):
         return self.size
+    
+    def get_total_cells(self):
+        return self.size * self.size
 
     # Checks if the cell is on the edge of the board
     def is_on_edge(self, row, col):
         return row == 0 or row == self.size-1 or col == 0 or col == self.size-1
+    
+    def make_piece(self, color):
+        self.board <<= 2
+        self.board |= color
+
+    def make_stack(self, color):
+        self.make_piece(PIECE_EMPTY)
+        self.make_piece(PIECE_EMPTY)
+        self.make_piece(PIECE_EMPTY)
+        self.make_piece(PIECE_EMPTY)
+        self.make_piece(color)
 
     def make_board(self):
         column_counter = 0
         row_counter = 0
-        current_color = 'Orange' # Orange starts
+        current_color = PIECE_ORANGE
+        first = True
 
         for row in range(self.size):
-
             for col in range(self.size):
-                if(self.is_on_edge(row, col)):
-                    self.board[row][col] = []
-                else:
-                    self.board[row][col] = [current_color]
+                if not self.is_on_edge(row, col):
+                    self.make_stack(current_color)
                     column_counter += 1
-                    if(column_counter % 2 == 0):
-                        if(current_color == 'Orange'):
-                            current_color = 'Blue'
-                        else:
-                            current_color = 'Orange'
+                    if column_counter % 2 == 0:
+                        current_color = PIECE_BLUE if current_color == PIECE_ORANGE else PIECE_ORANGE
+                else:
+                    if(first):
+                        self.board |= PIECE_EMPTY
+                        self.make_piece(PIECE_EMPTY)
+                        self.make_piece(PIECE_EMPTY)
+                        self.make_piece(PIECE_EMPTY)
+                        self.make_piece(PIECE_EMPTY)
+                        first = False
+                    else:
+                        self.make_stack(PIECE_EMPTY)
 
             row_counter += 1
-            if(row_counter % 2 == 0):
-                current_color = 'Blue'
+            if row_counter % 2 == 0:
+                current_color = PIECE_BLUE
             else:
-                current_color = 'Orange'
+                current_color = PIECE_ORANGE
 
         self.make_hexagon()
 
-                
+    def substitute_stack(self, stack_position, new_stack):
+        self.board &= ~(STACK_MASK << (stack_position * 10))
+        self.board |= (new_stack << (stack_position * 10))
+
+
     def make_hexagon(self):
         cut = int(self.size * 0.25)
+        total = self.get_total_cells()
+        
+        for i in range(total):
+
         for i in range(self.size):
             for j in range(self.size):
                 if i < cut and j < cut - i:
-                    self.board[i][j] = None
+                    self.board[i, j] = PIECE_NONE
                 elif i < cut and j > self.size - (cut - i) - 1:
-                    self.board[i][j] = None
+                    self.board[i, j] = PIECE_NONE
                 elif i >= self.size - cut and j < cut - (self.size - i - 1):
-                    self.board[i][j] = None
+                    self.board[i, j] = PIECE_NONE
                 elif i >= self.size - cut and j > self.size - (cut - (self.size - i - 1)) - 1:
-                    self.board[i][j] = None
+                    self.board[i, j] = PIECE_NONE
+        print(self.board)
 
     # Takes a position and returns the stack at that position
     def get_stack(self, pos):
@@ -126,6 +150,7 @@ class Board:
         return self.board[i][j] != None and self.board[i][j] != [] and self.board[i][j][-1] == color
 
     # Checks if the board has any pieces of a given player
+    # TODO: before this, make "winnable move function" that verifies if the last move was a capture and didn't reveal a new opponent piece
     def verify_lost(self, player):
         for i in range(self.size):
             for j in range(self.size):

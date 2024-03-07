@@ -1,7 +1,7 @@
 from view.BoardView import BoardView
 from view.PlayerView import PlayerView
 import pygame
-from constants import SCREEN_WIDTH
+from config import SCREEN_WIDTH
 
 class GameView:
     def __init__(self, game_state, board, starting_cell, orange, blue):

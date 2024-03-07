@@ -1,5 +1,5 @@
 import pygame
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, CELL_SIZE
+from config import SCREEN_WIDTH, SCREEN_HEIGHT, CELL_SIZE
 
 class GameController:
     def __init__(self, game_state):

@@ -1,10 +1,10 @@
 import pygame
 from model.State import State
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT
+from config import SCREEN_WIDTH, SCREEN_HEIGHT
 
 def pygame_setup():
     pygame.init()
-    window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)
     pygame.display.set_caption("Focus")
     return window
 

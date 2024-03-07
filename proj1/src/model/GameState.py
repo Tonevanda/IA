@@ -1,7 +1,7 @@
 from model.Board import Board
 from controller.GameController import GameController
 from view.GameView import GameView
-from constants import CELL_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT
+from config import CELL_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT
 
 
 class GameState:
