@@ -139,8 +139,9 @@ class Board:
         stack_pieces = self.get_stack_size(stack)-1
         for i in range(num_pieces):
             piece_removed = (stack & (0b11 << ((stack_pieces-i)*2))) >> ((stack_pieces-i)*2)
-            removed >>= 2
-            removed |= (piece_removed << ((num_pieces - 1) * 2))
+            print("Piece removed: ", bin(piece_removed))
+            removed <<= 2
+            removed |= piece_removed
             stack &= ~(0b11 << ((stack_pieces-i)*2)) 
         return removed
         
