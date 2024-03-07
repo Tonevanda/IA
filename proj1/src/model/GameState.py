@@ -33,8 +33,8 @@ class GameState:
     def get_pos(self, pixel):
         x, y = pixel
         (starting_cell_x,starting_cell_y) = self.get_starting_cell()
-        cell_x = (x-starting_cell_x) // CELL_SIZE
-        cell_y = (y-starting_cell_y) // CELL_SIZE
+        cell_y = (x-starting_cell_x) // CELL_SIZE # Represents Columns
+        cell_x = (y-starting_cell_y) // CELL_SIZE # Represents Rows
         if self.is_outside_board(cell_x, cell_y): return (-1,-1)
         return (cell_x, cell_y)
     

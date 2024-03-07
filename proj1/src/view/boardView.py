@@ -31,9 +31,9 @@ class BoardView:
     def draw_possible_moves(self, window):
         if self.board.current_possible_moves is not None:
             current_cell = self.board.selected_cell
-            pygame.draw.rect(window, (255, 255, 0), (self.starting_cell_x + current_cell[0] * CELL_SIZE, self.starting_cell_y + current_cell[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+            pygame.draw.rect(window, (255, 255, 0), (self.starting_cell_x + current_cell[1] * CELL_SIZE, self.starting_cell_y + current_cell[0] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
             for move in self.board.current_possible_moves:
-                pygame.draw.rect(window, (0, 200, 0), (self.starting_cell_x + move[0] * CELL_SIZE, self.starting_cell_y + move[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+                pygame.draw.rect(window, (0, 200, 0), (self.starting_cell_x + move[1] * CELL_SIZE, self.starting_cell_y + move[0] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
 
         """
 

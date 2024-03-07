@@ -14,6 +14,7 @@ class GameController:
 
     def clicked_piece(self, cell):
         (cell_x,cell_y) =  cell
+        print("Cell: " + str(cell))
         stack = self.game_state.board.get_stack(cell)
         return (not self.game_state.board.is_none_stack(stack))
         # return 0 <= cell_x < self.game_state.board.size and 0 <= cell_y < self.game_state.board.size and self.game_state.board.board[cell_y][cell_x] != None

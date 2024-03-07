@@ -125,7 +125,7 @@ class Board:
             # the condition 0<=x+i<self.size and 0<=y+j<self.size ensures that the move is within the board
             # the condition abs(j)<=max-abs(i) ensures that that diagonal moves aren't used (because they can't)
             # the condition self.board[y+j][x+i] != None ensures that the move is inside the hexagon
-            return [(x+i,y+j) for i in range(-max,max+1) for j in range(-max,max+1) if (i,j)!=(0,0) and 0<=x+i<self.size and 0<=y+j<self.size and abs(j)<=max-abs(i) and not self.is_none_stack(self.get_stack((y+j, x+i)))]
+            return [(x+i,y+j) for i in range(-max,max+1) for j in range(-max,max+1) if (i,j)!=(0,0) and 0<=x+i<self.size and 0<=y+j<self.size and abs(j)<=max-abs(i) and not self.is_none_stack(self.get_stack((x+i, y+j)))]
 
     def remove_from_stack(self, stack, num_pieces):
         stack_pieces = self.get_stack_size(stack)-1
@@ -169,12 +169,12 @@ class Board:
         
 
     def transfer_pieces(self, source, destination):
-        source_pos = self.get_bitmap_position(source[1], source[0])
-        destination_pos = self.get_bitmap_position(destination[1], destination[0])
+        source_pos = self.get_bitmap_position(source[0], source[1])
+        destination_pos = self.get_bitmap_position(destination[0], destination[1])
         distance = self.get_distance_between_cells(source, destination)
 
-        source_stack = self.get_stack((source[1], source[0]))
-        destination_stack = self.get_stack((destination[1], destination[0]))
+        source_stack = self.get_stack(source)
+        destination_stack = self.get_stack(destination)
 
         new_source_stack = self.remove_from_stack(source_stack, distance)
         removed_stack = self.get_removed_from_stack(source_stack, distance)
