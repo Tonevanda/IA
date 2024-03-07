@@ -139,7 +139,6 @@ class Board:
         stack_pieces = self.get_stack_size(stack)-1
         for i in range(num_pieces):
             piece_removed = (stack & (0b11 << ((stack_pieces-i)*2))) >> ((stack_pieces-i)*2)
-            print("Piece removed: ", bin(piece_removed))
             removed <<= 2
             removed |= piece_removed
             stack &= ~(0b11 << ((stack_pieces-i)*2)) 
@@ -148,39 +147,43 @@ class Board:
     def add_pieces_to_stack(self, stack, removed_stack):
         shift = self.get_stack_size(stack) * 2
         removed_stack <<= shift
-        print ("Destination Stack : ", bin(stack), "Removed stack: ", bin(removed_stack))
         stack |= removed_stack
-        print ("After |= operation Stack: ", bin(stack))
         return stack
     
     def get_distance_between_cells(self, source, destination):
         return abs(destination[0] - source[0]) + abs(destination[1] - source[1])
 
+    def handle_removed_pieces(self, removed_pieces):
+        amount = self.get_stack_size(removed_pieces)
+        for i in range(amount):
+            piece = removed_pieces & (0b11 << (i*2))
+            if piece == self.game_state.get_current_player().get_color_bits():
+                self.game_state.add_to_player_stack()
+
+    def handle_stack_size_limit(self, stack, bitmap_position):
+        if(self.get_stack_size(stack) > 5):
+            overflow = self.get_stack_size(stack) - 5
+            rest = stack & ~(STACK_MASK << overflow*2)
+            stack = (stack & (STACK_MASK << overflow*2)) >> (overflow*2)
+            self.handle_removed_pieces(rest)
+        self.substitute_stack(bitmap_position, stack)
+        
+
     def transfer_pieces(self, source, destination):
         source_pos = self.get_bitmap_position(source[1], source[0])
         destination_pos = self.get_bitmap_position(destination[1], destination[0])
-        print("")
-        print("Making Move:")
         distance = self.get_distance_between_cells(source, destination)
-
 
         source_stack = self.get_stack((source[1], source[0]))
         destination_stack = self.get_stack((destination[1], destination[0]))
-        print("Source stack: ", bin(source_stack))
 
         new_source_stack = self.remove_from_stack(source_stack, distance)
         removed_stack = self.get_removed_from_stack(source_stack, distance)
         new_destination_stack = self.add_pieces_to_stack(destination_stack, removed_stack)
 
-        #print("New source stack: ", bin(new_source_stack))
-        print("Removed stack: ", bin(removed_stack))
-        print("New destination stack: ", bin(new_destination_stack))
-
         self.substitute_stack(source_pos, new_source_stack)
-        self.substitute_stack(destination_pos, new_destination_stack)
-
-        self.stack_handling(self, destination[1], destination[0])
-
+        self.handle_stack_size_limit(new_destination_stack, destination_pos)
+        self.verify_end()
 
 
     def make_move(self, pos, board):
@@ -203,27 +206,8 @@ class Board:
             board.board[y][x].extend(board.board[ys][xs])
             board.board[ys][xs] = []
             self.stack_handling(board, x, y)"""
-            
 
-    def handle_removed_pieces(self, removed_pieces):
-        for i in range(5):
-            piece = removed_pieces & (0b11 << (i*2))
-            if piece == self.game_state.get_current_player().get_color_bits():
-                self.game_state.add_stack_piece()
-
-    #if the stack at the destination is higher than 5, the pieces are removed until it is 5 high
-    #and if any of the pieces removed are the current player's color, they are added to the stack of the current player
-    def stack_handling(self, board, x, y):
-        stack = self.get_stack((x, y))
-        full_stack = stack & STACK_MASK
-
-        if(self.get_stack_size(stack) > 5):
-            full_stack = stack & STACK_MASK
-            rest = stack & ~STACK_MASK
-            self.handle_removed_pieces(rest)
-        
-        self.substitute_stack(self.get_bitmap_position(x, y), full_stack)
-
+    def verify_end(self):
         if(not self.game_state.did_win()):
             self.game_state.next_turn()  
 
