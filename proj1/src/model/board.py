@@ -9,7 +9,6 @@ class Board:
         self.make_board()
         
         self.selected_cell = None
-
         self.current_possible_moves = None
     
     def get_board(self):
@@ -116,7 +115,7 @@ class Board:
     
     # Takes a cell and returns a list of possible moves in the corresponding cell
     # TODO: Better way using bit operations?
-    def possible_moves(self, cell):
+    def get_possible_moves(self, cell):
         x, y = cell
         #you can only move as many pieces as the height of the stack
         stack = self.get_stack(cell)
@@ -188,7 +187,6 @@ class Board:
 
     def make_move(self, pos, board):
         x, y = pos
-        xs, ys = self.selected_cell
         current_player = self.game_state.get_current_player()
         selected_stack = self.get_stack(self.selected_cell)
 
@@ -201,11 +199,6 @@ class Board:
         #the move is valid if the stack at the current position is not empty, the top piece is the current player's color, and the destination is in the list of possible moves
         elif(not self.is_empty_stack(selected_stack), self.is_player_piece(self.selected_cell, current_player), pos in self.current_possible_moves):
             self.transfer_pieces(self.selected_cell, pos)
-
-        """elif(board.board[ys][xs]!= [] and board.board[ys][xs][-1]==self.game_state.get_current_player().get_color() and pos in self.current_possible_moves):
-            board.board[y][x].extend(board.board[ys][xs])
-            board.board[ys][xs] = []
-            self.stack_handling(board, x, y)"""
 
     def verify_end(self):
         if(not self.game_state.did_win()):

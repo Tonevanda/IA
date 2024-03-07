@@ -28,6 +28,13 @@ class BoardView:
                         pygame.draw.circle(window, color, (self.starting_cell_x + j * CELL_SIZE + CELL_SIZE // 2, self.starting_cell_y + i * CELL_SIZE + CELL_SIZE // 2 + k * -5), CELL_SIZE // 2 - 5)
                         pygame.draw.circle(window, light_color, (self.starting_cell_x + j * CELL_SIZE + CELL_SIZE // 2 - 5, self.starting_cell_y + i * CELL_SIZE + CELL_SIZE // 2 - 5 + k * -5), CELL_SIZE // 4)
 
+    def draw_possible_moves(self, window):
+        if self.board.current_possible_moves is not None:
+            current_cell = self.board.selected_cell
+            pygame.draw.rect(window, (255, 255, 0), (self.starting_cell_x + current_cell[0] * CELL_SIZE, self.starting_cell_y + current_cell[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+            for move in self.board.current_possible_moves:
+                pygame.draw.rect(window, (0, 200, 0), (self.starting_cell_x + move[0] * CELL_SIZE, self.starting_cell_y + move[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+
         """
 
         for i, row in enumerate(self.board.size):
@@ -47,7 +54,9 @@ class BoardView:
                         pygame.draw.circle(window, light_color, (self.starting_cell_x + j * CELL_SIZE + CELL_SIZE // 2 - 5, self.starting_cell_y + i * CELL_SIZE + CELL_SIZE // 2 - 5 + k * -5), CELL_SIZE // 4)
         """
     def draw(self, window):
+        self.draw_possible_moves(window)
         self.draw_board(window)
+        
     
     """ Positional Drawing
     def generic_draw(self, stack, window, pos):

@@ -43,7 +43,8 @@ class GameController:
         else:    
             if self.clicked_piece(cell):
                 if self.game_state.board.current_possible_moves == None and self.game_state.board.selected_cell != (0,0):
-                    self.game_state.board.current_possible_moves = self.game_state.board.possible_moves(cell)
+                    self.game_state.board.current_possible_moves = self.game_state.board.get_possible_moves(cell)
+                    print("Clicked Piece: " + str(cell) + " Possible moves: " + str(self.game_state.board.current_possible_moves))
                     self.game_state.board.selected_cell = cell
                 else:
                     self.game_state.board.make_move(cell, self.game_state.board)
