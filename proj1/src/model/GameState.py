@@ -63,7 +63,7 @@ class GameState:
     def remove_from_player_stack(self):
         current_player = self.get_current_player()
         return current_player.remove_stack_piece()
-        
+    
     def run(self, event, window):
         self.gameController.handle_event(event)
         self.gameView.draw(window)

@@ -13,11 +13,8 @@ class GameController:
         return x > SCREEN_WIDTH - CELL_SIZE and y > SCREEN_HEIGHT - CELL_SIZE*5
 
     def clicked_piece(self, cell):
-        (cell_x,cell_y) =  cell
-        print("Cell: " + str(cell))
         stack = self.game_state.board.get_stack(cell)
         return (not self.game_state.board.is_none_stack(stack))
-        # return 0 <= cell_x < self.game_state.board.size and 0 <= cell_y < self.game_state.board.size and self.game_state.board.board[cell_y][cell_x] != None
 
     # TODO: Maybe don't use pygame.mouse.get_pos() and replace with cell
     def clicked_saved_player_stack(self):
@@ -33,9 +30,6 @@ class GameController:
 
     def handle_click(self, cell):
 
-        #if self.clicked_corner(cell):
-        #    self.game_state.board.selected_cell = (0,0)
-        #    print("Corner clicked")
         if self.clicked_saved_player_stack():
             print("Stack clicked")
         elif cell == (-1,-1):
@@ -45,7 +39,6 @@ class GameController:
             if self.clicked_piece(cell):
                 if self.game_state.board.current_possible_moves == None and self.game_state.board.selected_cell != (0,0):
                     self.game_state.board.current_possible_moves = self.game_state.board.get_possible_moves(cell)
-                    print("Clicked Piece: " + str(cell) + " Possible moves: " + str(self.game_state.board.current_possible_moves))
                     self.game_state.board.selected_cell = cell
                 else:
                     self.game_state.board.make_move(cell, self.game_state.board)

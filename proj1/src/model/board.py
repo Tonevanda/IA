@@ -74,20 +74,26 @@ class Board:
     def get_bitmap_position(self, row, col):
         return row * self.size + col
 
-    def make_hexagon(self):
+    def is_outside_board(self, cell):
         cut = int(self.size * 0.25)
+        (i,j) = cell
+        if i < cut and j < cut - i:
+            return True
+        elif i < cut and j > self.size - (cut - i) - 1:
+            return True
+        elif i >= self.size - cut and j < cut - (self.size - i - 1):
+            return True
+        elif i >= self.size - cut and j > self.size - (cut - (self.size - i - 1)) - 1:
+            return True
+
+    def make_hexagon(self):
+        
         none_stack = STACK_MASK
 
         for i in range(self.size):
             for j in range(self.size):
                 bitmap_position = self.get_bitmap_position(i, j)
-                if i < cut and j < cut - i:
-                    self.substitute_stack(bitmap_position, none_stack)
-                elif i < cut and j > self.size - (cut - i) - 1:
-                    self.substitute_stack(bitmap_position, none_stack)
-                elif i >= self.size - cut and j < cut - (self.size - i - 1):
-                    self.substitute_stack(bitmap_position, none_stack)
-                elif i >= self.size - cut and j > self.size - (cut - (self.size - i - 1)) - 1:
+                if(self.is_outside_board((i,j))):
                     self.substitute_stack(bitmap_position, none_stack)
 
     # Takes a position and returns the stack at that position
@@ -114,18 +120,28 @@ class Board:
         return bin(stack).count("1")
     
     # Takes a cell and returns a list of possible moves in the corresponding cell
-    # TODO: Better way using bit operations?
     def get_possible_moves(self, cell):
-        x, y = cell
-        #you can only move as many pieces as the height of the stack
+        x,y = cell
         stack = self.get_stack(cell)
-        if stack is not None:
-            max=self.get_stack_size(stack)
-            # i and j are the offsets from the current position. They vary between -max and max+1
-            # the condition 0<=x+i<self.size and 0<=y+j<self.size ensures that the move is within the board
-            # the condition abs(j)<=max-abs(i) ensures that that diagonal moves aren't used (because they can't)
-            # the condition self.board[y+j][x+i] != None ensures that the move is inside the hexagon
-            return [(x+i,y+j) for i in range(-max,max+1) for j in range(-max,max+1) if (i,j)!=(0,0) and 0<=x+i<self.size and 0<=y+j<self.size and abs(j)<=max-abs(i) and not self.is_none_stack(self.get_stack((x+i, y+j)))]
+        max_move = self.get_stack_size(stack)
+
+        if max_move > 0:
+            moves = []
+            for distance in range(1, max_move + 1):
+                if 0 <= x - distance < self.size:
+                    if(not self.is_outside_board((x - distance, y))):
+                        moves.append((x - distance, y))
+                if(0 <= x + distance < self.size):
+                    if(not self.is_outside_board((x + distance, y))):
+                        moves.append((x + distance, y))
+                if(0 <= y - distance < self.size):
+                    if(not self.is_outside_board((x, y - distance))):
+                        moves.append((x, y - distance))
+                if(0 <= y + distance < self.size):
+                    if(not self.is_outside_board((x, y + distance))):
+                        moves.append((x, y + distance))
+            return moves
+        return None
 
     def remove_from_stack(self, stack, num_pieces):
         stack_pieces = self.get_stack_size(stack)-1
