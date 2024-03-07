@@ -1,3 +1,5 @@
+from config import PIECE_BLUE, PIECE_ORANGE
+
 class Player:
     def __init__(self, color, player_type):
         self.color = color
@@ -10,6 +12,9 @@ class Player:
     def get_color(self):
         return self.color
     
+    def get_color_bits(self):
+        return PIECE_ORANGE if self.color == 'Orange' else PIECE_BLUE
+
     def get_stack_count(self):
         return len(self.stack_pieces)
     

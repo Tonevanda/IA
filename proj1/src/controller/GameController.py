@@ -1,5 +1,5 @@
 import pygame
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, CELL_SIZE
+from config import SCREEN_WIDTH, SCREEN_HEIGHT, CELL_SIZE
 
 class GameController:
     def __init__(self, game_state):
@@ -14,7 +14,9 @@ class GameController:
 
     def clicked_piece(self, cell):
         (cell_x,cell_y) =  cell
-        return 0 <= cell_x < self.game_state.board.size and 0 <= cell_y < self.game_state.board.size and self.game_state.board.board[cell_y][cell_x] != None
+        stack = self.game_state.board.get_stack(cell)
+        return (not self.game_state.board.is_none_stack(stack))
+        # return 0 <= cell_x < self.game_state.board.size and 0 <= cell_y < self.game_state.board.size and self.game_state.board.board[cell_y][cell_x] != None
 
     # TODO: Maybe don't use pygame.mouse.get_pos() and replace with cell
     def clicked_saved_player_stack(self):
@@ -41,16 +43,18 @@ class GameController:
         else:    
             if self.clicked_piece(cell):
                 if self.game_state.board.current_possible_moves == None and self.game_state.board.selected_cell != (0,0):
-                    print("here")
-                    self.game_state.board.current_possible_moves = self.game_state.board.possible_moves(cell)
+                    self.game_state.board.current_possible_moves = self.game_state.board.get_possible_moves(cell)
+                    print("Clicked Piece: " + str(cell) + " Possible moves: " + str(self.game_state.board.current_possible_moves))
                     self.game_state.board.selected_cell = cell
                 else:
                     self.game_state.board.make_move(cell, self.game_state.board)
                     self.game_state.board.current_possible_moves = None
                     self.game_state.board.selected_cell = None
+                
             else:
                 self.game_state.board.current_possible_moves = None
                 self.game_state.board.selected_cell = None
+                
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:

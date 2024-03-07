@@ -1,7 +1,7 @@
 from model.Board import Board
 from controller.GameController import GameController
 from view.GameView import GameView
-from constants import CELL_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT
+from config import CELL_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT
 
 
 class GameState:
@@ -16,13 +16,6 @@ class GameState:
         self.gameView = GameView(self, self.board, starting_cell, self.orange, self.blue)
 
         self.turn = 1
-        """
-        self.player1 = 'Orange'
-        self.player2 = 'Blue'
-        self.current_player = self.player1
-        self.current_possible_moves = None
-        self.selected_cell = None
-        """
 
     def get_starting_cell(self):
         board_width = self.board.size * CELL_SIZE
