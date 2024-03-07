@@ -213,7 +213,7 @@ class Board:
 
         #if the move is valid, the pieces are moved and the turn changes
         #the move is valid if the stack at the current position is not empty, the top piece is the current player's color, and the destination is in the list of possible moves
-        elif(not self.is_empty_stack(selected_stack), self.is_player_piece(self.selected_cell, current_player), pos in self.current_possible_moves):
+        elif(not self.is_empty_stack(selected_stack) and self.is_player_piece(self.selected_cell, current_player) and pos in self.current_possible_moves):
             self.transfer_pieces(self.selected_cell, pos)
 
     def verify_end(self):
