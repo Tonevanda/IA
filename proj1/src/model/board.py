@@ -130,27 +130,26 @@ class Board:
 
     def remove_from_stack(self, stack, num_pieces):
         stack_pieces = self.get_stack_size(stack)-1
-
         for i in range(num_pieces):
-            stack &= ~(0b11 << ((stack_pieces-i)*2))
-
+            stack &= ~(0b11 << ((stack_pieces-i) * 2))
         return stack & STACK_MASK
 
     def get_removed_from_stack(self, stack, num_pieces):
         removed = 0b0
         stack_pieces = self.get_stack_size(stack)-1
-
         for i in range(num_pieces):
             piece_removed = (stack & (0b11 << ((stack_pieces-i)*2))) >> ((stack_pieces-i)*2)
-            removed <<= 2
-            removed |= piece_removed
+            removed >>= 2
+            removed |= (piece_removed << ((num_pieces - 1) * 2))
             stack &= ~(0b11 << ((stack_pieces-i)*2)) 
         return removed
         
-    def add_pieces_to_stack(self, stack, new_stack):
+    def add_pieces_to_stack(self, stack, removed_stack):
         shift = self.get_stack_size(stack) * 2
-        stack <<= shift
-        stack |= new_stack
+        removed_stack <<= shift
+        print ("Destination Stack : ", bin(stack), "Removed stack: ", bin(removed_stack))
+        stack |= removed_stack
+        print ("After |= operation Stack: ", bin(stack))
         return stack
     
     def get_distance_between_cells(self, source, destination):
@@ -159,19 +158,20 @@ class Board:
     def transfer_pieces(self, source, destination):
         source_pos = self.get_bitmap_position(source[1], source[0])
         destination_pos = self.get_bitmap_position(destination[1], destination[0])
-        print("Source: ", source_pos, "Destination: ", destination_pos)
-
+        print("")
+        print("Making Move:")
         distance = self.get_distance_between_cells(source, destination)
-        print("Distance: ", distance)
 
-        source_stack = self.get_stack(source)
-        destination_stack = self.get_stack(destination)
+
+        source_stack = self.get_stack((source[1], source[0]))
+        destination_stack = self.get_stack((destination[1], destination[0]))
+        print("Source stack: ", bin(source_stack))
 
         new_source_stack = self.remove_from_stack(source_stack, distance)
         removed_stack = self.get_removed_from_stack(source_stack, distance)
         new_destination_stack = self.add_pieces_to_stack(destination_stack, removed_stack)
 
-        print("New source stack: ", bin(new_source_stack))
+        #print("New source stack: ", bin(new_source_stack))
         print("Removed stack: ", bin(removed_stack))
         print("New destination stack: ", bin(new_destination_stack))
 
@@ -198,10 +198,10 @@ class Board:
         elif(not self.is_empty_stack(selected_stack), self.is_player_piece(self.selected_cell, current_player), pos in self.current_possible_moves):
             self.transfer_pieces(self.selected_cell, pos)
 
-        elif(board.board[ys][xs]!= [] and board.board[ys][xs][-1]==self.game_state.get_current_player().get_color() and pos in self.current_possible_moves):
+        """elif(board.board[ys][xs]!= [] and board.board[ys][xs][-1]==self.game_state.get_current_player().get_color() and pos in self.current_possible_moves):
             board.board[y][x].extend(board.board[ys][xs])
             board.board[ys][xs] = []
-            self.stack_handling(board, x, y)
+            self.stack_handling(board, x, y)"""
             
 
     def handle_removed_pieces(self, removed_pieces):
@@ -220,19 +220,20 @@ class Board:
             full_stack = stack & STACK_MASK
             rest = stack & ~STACK_MASK
             self.handle_removed_pieces(rest)
-            self.substitute_stack(self.get_bitmap_position(x, y), full_stack)
+        
+        self.substitute_stack(self.get_bitmap_position(x, y), full_stack)
 
         if(not self.game_state.did_win()):
             self.game_state.next_turn()  
 
     # Given a cell, returns if it belongs to a given player
     def is_player_piece(self, cell, player):
-        
         stack = self.get_stack(cell)
         color = player.get_color_bits()
         num_pieces = self.get_stack_size(stack)
         if num_pieces == 0:
             return False
+        stack >>= (num_pieces-1)*2
         return (stack&0b11) == color
 
     # Checks if the board has any pieces of a given player

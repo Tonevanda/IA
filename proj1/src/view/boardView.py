@@ -14,8 +14,8 @@ class BoardView:
                 stack = self.board.get_stack((i, j))
                 if(not self.board.is_none_stack(stack)):
                     pygame.draw.rect(window, (0, 0, 0), (self.starting_cell_x + j * CELL_SIZE, self.starting_cell_y + i * CELL_SIZE, CELL_SIZE, CELL_SIZE), 2)
-                    for k in range(4,-1,-1):
-                        piece = stack & (0b11 << (k * 2))
+                    for k in range(5):
+                        piece = (stack & (0b11 << (k * 2))) >> (k * 2)
                         if piece == PIECE_ORANGE:
                             color = (255, 100, 0)
                             light_color = (255, 150, 50)
