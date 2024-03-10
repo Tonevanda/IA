@@ -198,27 +198,20 @@ class Board:
 
         self.substitute_stack(source_pos, new_source_stack)
         self.handle_stack_size_limit(new_destination_stack, destination_pos)
-        self.verify_end()
 
-
-    def make_move(self, pos, board):
+    def make_move(self, pos, current_player):
         x, y = pos
-        current_player = self.game_state.get_current_player()
         selected_stack = self.get_stack(self.selected_cell)
 
         if (self.selected_cell == (0,0)): # Selected from own stack
             self.board[y][x].append(current_player)
             self.game_state.remove_from_player_stack()
-            self.stack_handling(board, x, y)
+            self.stack_handling(self.board, x, y)
 
         #if the move is valid, the pieces are moved and the turn changes
         #the move is valid if the stack at the current position is not empty, the top piece is the current player's color, and the destination is in the list of possible moves
-        elif(not self.is_empty_stack(selected_stack) and self.is_player_stack(self.selected_cell, current_player) and pos in self.current_possible_moves):
+        elif(not self.is_empty_stack(selected_stack) and self.is_player_stack(self.selected_cell, current_player)):
             self.transfer_pieces(self.selected_cell, pos)
-
-    def verify_end(self):
-        if(not self.game_state.did_win()):
-            self.game_state.next_turn()  
 
     # Given a cell, returns if it belongs to a given player
     def is_player_stack(self, cell, player):

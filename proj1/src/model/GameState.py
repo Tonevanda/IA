@@ -80,6 +80,13 @@ class GameState:
             self.board.selected_cell = cell
         else:
             self.unselect_cell()
+
+    def make_move(self, cell):
+        if cell in self.board.current_possible_moves:
+            self.board.make_move(cell, self.get_current_player())
+            if(not self.did_win()):
+                self.next_turn()
+        self.unselect_cell()
     
     def run(self, event, window):
         self.gameController.handle_event(event)
