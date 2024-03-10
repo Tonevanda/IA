@@ -33,21 +33,18 @@ class GameController:
         if self.clicked_saved_player_stack():
             print("Stack clicked")
         elif cell == (-1,-1):
-            self.game_state.board.current_possible_moves = None
-            self.game_state.board.selected_cell = None
+            self.game_state.unselect_cell()
         else:    
             if self.clicked_piece(cell):
-                if self.game_state.board.current_possible_moves == None and self.game_state.board.selected_cell != (0,0):
-                    self.game_state.board.current_possible_moves = self.game_state.board.get_possible_moves(cell)
-                    self.game_state.board.selected_cell = cell
+                if (self.game_state.no_cell_selected()):
+                    print("Piece clicked and doesn't have cell selected")
+                    self.game_state.select_cell(cell)
                 else:
+                    print("move piece")
                     self.game_state.board.make_move(cell, self.game_state.board)
-                    self.game_state.board.current_possible_moves = None
-                    self.game_state.board.selected_cell = None
-                
+                    self.game_state.unselect_cell()
             else:
-                self.game_state.board.current_possible_moves = None
-                self.game_state.board.selected_cell = None
+                self.game_state.unselect_cell()
                 
 
     def handle_event(self, event):

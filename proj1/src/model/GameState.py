@@ -64,6 +64,23 @@ class GameState:
         current_player = self.get_current_player()
         return current_player.remove_stack_piece()
     
+    def unselect_cell(self):
+        self.board.current_possible_moves = None
+        self.board.selected_cell = None
+
+    def no_cell_selected(self):
+        return (self.board.current_possible_moves == None and self.board.selected_cell != (0,0))
+    
+    def can_select_cell(self, cell):
+        return (self.board.is_player_stack(cell, self.get_current_player()))
+
+    def select_cell(self, cell):
+        if self.can_select_cell(cell):
+            self.board.current_possible_moves = self.board.get_possible_moves(cell)
+            self.board.selected_cell = cell
+        else:
+            self.unselect_cell()
+    
     def run(self, event, window):
         self.gameController.handle_event(event)
         self.gameView.draw(window)

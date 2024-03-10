@@ -213,7 +213,7 @@ class Board:
 
         #if the move is valid, the pieces are moved and the turn changes
         #the move is valid if the stack at the current position is not empty, the top piece is the current player's color, and the destination is in the list of possible moves
-        elif(not self.is_empty_stack(selected_stack) and self.is_player_piece(self.selected_cell, current_player) and pos in self.current_possible_moves):
+        elif(not self.is_empty_stack(selected_stack) and self.is_player_stack(self.selected_cell, current_player) and pos in self.current_possible_moves):
             self.transfer_pieces(self.selected_cell, pos)
 
     def verify_end(self):
@@ -221,7 +221,7 @@ class Board:
             self.game_state.next_turn()  
 
     # Given a cell, returns if it belongs to a given player
-    def is_player_piece(self, cell, player):
+    def is_player_stack(self, cell, player):
         stack = self.get_stack(cell)
         color = player.get_color_bits()
         num_pieces = self.get_stack_size(stack)
@@ -236,6 +236,6 @@ class Board:
     def verify_lost(self, player):
         for i in range(self.size):
             for j in range(self.size):
-                if self.is_player_piece((i, j), player):
+                if self.is_player_stack((i, j), player):
                     return False
         return True
