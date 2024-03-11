@@ -201,25 +201,18 @@ class Board:
 
     def place_saved_piece(self, cell, player):
         destination_pos = self.get_bitmap_position(cell[0], cell[1])
+        print("place saved piece")
 
         destination_stack = self.get_stack(cell)
         new_destination_stack = self.add_pieces_to_stack(destination_stack, player.get_color_bits())
-
-        self.substitute_stack(destination_pos, new_destination_stack)
+        
         self.handle_stack_size_limit(new_destination_stack, destination_pos)
 
     def make_move(self, pos, current_player):
-        x, y = pos
         selected_stack = self.get_stack(self.selected_cell)
-
-        if (self.selected_cell == (0,0)): # Selected from own stack
-            self.board[y][x].append(current_player)
-            self.game_state.remove_from_player_stack()
-            self.stack_handling(self.board, x, y)
-
         #if the move is valid, the pieces are moved and the turn changes
         #the move is valid if the stack at the current position is not empty, the top piece is the current player's color, and the destination is in the list of possible moves
-        elif(not self.is_empty_stack(selected_stack) and self.is_player_stack(self.selected_cell, current_player)):
+        if(not self.is_empty_stack(selected_stack) and self.is_player_stack(self.selected_cell, current_player)):
             self.transfer_pieces(self.selected_cell, pos)
 
     # Given a cell, returns if it belongs to a given player
