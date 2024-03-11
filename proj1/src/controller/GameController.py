@@ -29,9 +29,8 @@ class GameController:
         return check_rect.collidepoint(mouse_pos)
 
     def handle_click(self, cell):
-
         if self.clicked_saved_player_stack():
-            self.game_state.select_saved_player_stack()
+            self.game_state.handle_saved_player_stack_selection()
         elif cell == (-1,-1):
             self.game_state.unselect_cell()
         else:    

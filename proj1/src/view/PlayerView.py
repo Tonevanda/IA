@@ -24,13 +24,18 @@ class PlayerView:
         # Draw stack count
         window.blit(stack_count_text, text_rect.topleft)  # Draw the stack count
 
+    def draw_selected_stack(self, window, position):
+        if self.player.stack_selected:
+            pygame.draw.rect(window, (255, 255, 0), position)
 
     def draw(self, window):
         if (self.player.get_color() == "Orange"):
             self.draw_name(window, (20, 20), (255, 100, 0))
+            self.draw_selected_stack(window, (50, 50, 80, 80))
             self.draw_stack(window, (50, 50, 80, 80), (255, 100, 0))
         else:
             self.draw_name(window, (590, 20), (50, 50, 255))
+            self.draw_selected_stack(window, (630, 50, 80, 80))
             self.draw_stack(window, (630, 50, 80, 80), (50, 50, 255))
         
         
