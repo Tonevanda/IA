@@ -49,7 +49,8 @@ class GameState:
 
     def did_win(self):
         if self.verify_win():
-            self.state.to_end()
+            winner = self.get_current_player()
+            self.state.to_end(winner)
             return True
         return False
 

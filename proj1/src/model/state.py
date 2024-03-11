@@ -18,13 +18,13 @@ class State:
         if isinstance(self.current_state, SelectMenuState):
             self.current_state = GameState(self, size, Orange, Blue)
 
-    def to_end(self):
+    def to_end(self, winner):
         if isinstance(self.current_state, GameState):
-            self.current_state = EndState(self)
+            self.current_state = EndState(self, winner)
 
-    def to_main_menu(self):
+    def play_again(self):
         if isinstance(self.current_state, EndState):
-            self.current_state = MainMenuState(self)
+            self.current_state = SelectMenuState(self)
     
     def to_quit(self):
         self.current_state = None

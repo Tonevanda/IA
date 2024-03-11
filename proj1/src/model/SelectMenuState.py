@@ -8,7 +8,7 @@ class SelectMenuState:
         self.player_types = ["Player", "Easy Bot", "Medium Bot", "Hard Bot"]
         self.selected_orange = 0    # Index of the currently selected player 1 (orange)
         self.selected_blue = 0      # Index of the currently selected player 2 (blue)
-        self.size = 8
+        self.size = 6
         self.controller = SelectMenuController(self)
         self.view = SelectMenuView(self)
 
