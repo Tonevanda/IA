@@ -199,6 +199,15 @@ class Board:
         self.substitute_stack(source_pos, new_source_stack)
         self.handle_stack_size_limit(new_destination_stack, destination_pos)
 
+    def place_saved_piece(self, cell, player):
+        destination_pos = self.get_bitmap_position(cell[0], cell[1])
+
+        destination_stack = self.get_stack(cell)
+        new_destination_stack = self.add_pieces_to_stack(destination_stack, player.get_color_bits())
+
+        self.substitute_stack(destination_pos, new_destination_stack)
+        self.handle_stack_size_limit(new_destination_stack, destination_pos)
+
     def make_move(self, pos, current_player):
         x, y = pos
         selected_stack = self.get_stack(self.selected_cell)

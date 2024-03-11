@@ -31,7 +31,7 @@ class GameController:
     def handle_click(self, cell):
 
         if self.clicked_saved_player_stack():
-            pass
+            self.game_state.select_saved_player_stack()
         elif cell == (-1,-1):
             self.game_state.unselect_cell()
         else:    

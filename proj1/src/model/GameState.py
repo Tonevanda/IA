@@ -69,7 +69,7 @@ class GameState:
         self.board.selected_cell = None
 
     def no_cell_selected(self):
-        return (self.board.current_possible_moves == None and self.board.selected_cell != (0,0))
+        return (self.board.current_possible_moves == None and self.get_current_player().stack_selected == False)
     
     def can_select_cell(self, cell):
         return (self.board.is_player_stack(cell, self.get_current_player()))
@@ -81,13 +81,43 @@ class GameState:
         else:
             self.unselect_cell()
 
-    def make_move(self, cell):
+    def has_saved_pieces(self):
+        player = self.get_current_player()
+        return player.get_stack_count() > 0
+
+    def select_saved_player_stack(self):
+        player = self.get_current_player()
+        if(not self.has_saved_pieces()):
+            return
+        player.select_stack()
+        self.board.selected_cell = (0,0)
+    
+    def unselect_saved_player_stack(self):
+        player = self.get_current_player()
+        player.unselect_stack()
+        self.board.selected_cell = None
+
+    def place_saved_piece(self, cell):
+        current_player = self.get_current_player()
+        if current_player.stack_selected:
+            self.board.place_saved_piece(cell, current_player)
+            self.remove_from_player_stack()
+            self.unselect_saved_player_stack()
+            self.next_turn()
+
+    def move_stack(self, cell):
         if cell in self.board.current_possible_moves:
             self.board.make_move(cell, self.get_current_player())
             if(not self.did_win()):
                 self.next_turn()
         self.unselect_cell()
-    
+
+    def make_move(self, cell):
+        if(self.get_current_player().stack_selected):
+            self.place_saved_piece(cell)
+        else:
+            self.move_stack(cell)
+
     def run(self, event, window):
         self.gameController.handle_event(event)
         self.gameView.draw(window)
