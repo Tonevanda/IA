@@ -127,6 +127,9 @@ class GameState:
             self.place_saved_piece(cell)
         else:
             self.move_stack(cell)
+
+    def is_bot_playing(self):
+        return self.get_current_player().is_bot()
         
     def run(self, event, window):
         self.gameController.handle_event(event)

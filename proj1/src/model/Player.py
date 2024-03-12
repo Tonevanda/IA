@@ -31,5 +31,17 @@ class Player:
     def unselect_stack(self):
         self.stack_selected = False
 
+    def is_bot(self):
+        return self.player_type == 'Easy Bot' | self.player_type == 'Hard Bot' | self.player_type == 'Medium Bot'
+
+    def is_easy_bot(self):
+        return self.player_type == 'Easy Bot'
+
+    def is_medium_bot(self):
+        return self.player_type == 'Medium Bot'
+    
+    def is_hard_bot(self):
+        return self.player_type == 'Hard Bot'
+
     def __str__(self):
         return self.color + ' ' + self.player_type
