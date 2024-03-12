@@ -108,7 +108,8 @@ class GameState:
             self.board.place_saved_piece(cell, current_player)
             self.remove_from_player_stack()
             self.unselect_saved_player_stack(current_player)
-            self.next_turn()
+            if(not self.did_win()):
+                self.next_turn()
 
     def move_stack(self, cell):
         if cell in self.board.current_possible_moves:
@@ -117,12 +118,16 @@ class GameState:
                 self.next_turn()
         self.unselect_cell()
 
+    # Function used specifically for the AI to calculate the tree
+    def make_move(self, cell, board):
+        return None
+
     def make_move(self, cell):
         if(self.get_current_player().stack_selected):
             self.place_saved_piece(cell)
         else:
             self.move_stack(cell)
-
+        
     def run(self, event, window):
         self.gameController.handle_event(event)
         self.gameView.draw(window)

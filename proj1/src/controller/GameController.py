@@ -4,13 +4,6 @@ from config import SCREEN_WIDTH, SCREEN_HEIGHT, CELL_SIZE
 class GameController:
     def __init__(self, game_state):
         self.game_state = game_state
-        
-    # Checks if the click is in the corner of the window
-    # TODO: There must be a better way to do this // Not being used rn I think
-    def clicked_corner(self, cell):
-        (cell_x,cell_y) =  cell
-        x, y = cell_x*50, cell_y*50 # Missing + starting cell
-        return x > SCREEN_WIDTH - CELL_SIZE and y > SCREEN_HEIGHT - CELL_SIZE*5
 
     def clicked_piece(self, cell):
         stack = self.game_state.board.get_stack(cell)
@@ -46,5 +39,3 @@ class GameController:
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.handle_click(self.game_state.get_pos(event.pos))
-
-

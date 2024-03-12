@@ -1,5 +1,4 @@
 from config import PIECE_BLUE, PIECE_ORANGE, PIECE_EMPTY, PIECE_NONE, STACK_MASK
-import numpy as np
 
 class Board:
     def __init__(self, game_state, size):

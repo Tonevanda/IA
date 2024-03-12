@@ -16,7 +16,6 @@ class SelectMenuState:
         self.state_manager.start_game(self.size, Player('Orange', self.player_types[self.selected_orange]), Player('Blue', self.player_types[self.selected_blue]))
 
     def update_selected_orange(self, player):
-        print("Orange: " + player)
         match player:
             case "Player":
                 self.selected_orange = 0
@@ -28,7 +27,6 @@ class SelectMenuState:
                 self.selected_orange = 3
     
     def update_selected_blue(self, player):
-        print("Blue: " + player)
         match player:
             case "Player":
                 self.selected_blue = 0
