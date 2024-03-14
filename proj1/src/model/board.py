@@ -1,4 +1,5 @@
 from config import PIECE_BLUE, PIECE_ORANGE, PIECE_EMPTY, PIECE_NONE, STACK_MASK
+import random
 
 class Board:
     def __init__(self, game_state, size):
@@ -18,6 +19,19 @@ class Board:
     
     def get_total_cells(self):
         return self.size * self.size
+    
+    # TODO: better way where it takes into account the cuts
+    def get_random_cell(self):
+        return (random.randint(0, self.size-1), random.randint(0, self.size-1))
+    
+    # TODO: better way taking advantage of bitmap?
+    def get_selectable_cells(self, player):
+        cells = []
+        for i in range(self.size):
+            for j in range(self.size):
+                if self.is_player_stack((i, j), player):
+                    cells.append((i, j))
+        return cells
 
     # Checks if the cell is on the edge of the board
     def is_on_edge(self, row, col):

@@ -2,7 +2,7 @@ from model.Board import Board
 from controller.GameController import GameController
 from view.GameView import GameView
 from config import CELL_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT
-
+import random
 
 class GameState:
     def __init__(self, state, size, orange, blue):
@@ -130,7 +130,36 @@ class GameState:
 
     def is_bot_playing(self):
         return self.get_current_player().is_bot()
+    
+    def handle_easy_bot(self):
+        if self.has_saved_pieces():
+            self.place_saved_piece(self.board.get_random_cell())
+        else:
+            selectable_cells = self.board.get_selectable_cells(self.get_current_player())
+            random_select = random.choice(selectable_cells)
+            self.select_cell(random_select)
+            movable_cells = self.board.current_possible_moves
+            random_move = random.choice(movable_cells)
+            self.move_stack(random_move)
+
+    def handle_medium_bot(self):
+        pass
+
+    def handle_hard_bot(self):
+        pass
+            
+    
+    def handle_bot(self):
+        if self.is_bot_playing():
+            bot = self.get_current_player()
+            if(bot.is_easy_bot()):
+                self.handle_easy_bot()
+            elif(bot.is_medium_bot()):
+                self.handle_medium_bot()
+            elif(bot.is_hard_bot()):
+                self.handle_hard_bot()
         
     def run(self, event, window):
         self.gameController.handle_event(event)
+        self.handle_bot()
         self.gameView.draw(window)

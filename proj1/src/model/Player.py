@@ -32,7 +32,7 @@ class Player:
         self.stack_selected = False
 
     def is_bot(self):
-        return self.player_type == 'Easy Bot' | self.player_type == 'Hard Bot' | self.player_type == 'Medium Bot'
+        return self.player_type == 'Easy Bot' or self.player_type == 'Hard Bot' or self.player_type == 'Medium Bot'
 
     def is_easy_bot(self):
         return self.player_type == 'Easy Bot'
