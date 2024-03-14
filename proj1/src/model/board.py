@@ -9,6 +9,8 @@ class Board:
         self.make_board()
         
         self.selected_cell = None
+
+        # TODO: Refactor so this is inside Player.py
         self.current_possible_moves = None
     
     def get_board(self):
@@ -115,6 +117,7 @@ class Board:
         bitmap_pos = self.get_bitmap_position(row, col)
         return (self.board >> (bitmap_pos * 10)) & STACK_MASK
 
+    # TODO: All this functions could be inside Stack.py to be better organized (but not turning it into an object)
     def is_none_stack(self, stack):
         return stack == STACK_MASK
     
