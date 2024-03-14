@@ -1,16 +1,16 @@
 from model.Board import Board
 from controller.GameController import GameController
 from view.GameView import GameView
-from config import CELL_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT
+from config import CELL_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, PIECE_ORANGE
 import random
 from time import sleep
 
 class GameState:
     def __init__(self, state, size, orange, blue):
         self.state = state
-        self.board = Board(self, size)
         self.orange = orange    # Player 1
         self.blue = blue        # Player 2
+        self.board = Board(self, size)
         self.gameController = GameController(self)
 
         starting_cell = self.get_starting_cell()
@@ -66,6 +66,18 @@ class GameState:
         current_player = self.get_current_player()
         return current_player.remove_stack_piece()
     
+    def add_to_player_cells_color(self, cell, color):
+        if color == PIECE_ORANGE:
+            self.orange.add_cell(cell)
+        else:
+            self.blue.add_cell(cell)
+    
+    def add_to_player_cells(self, cell, player):
+        player.add_cell(cell)
+
+    def remove_from_player_cells(self, cell, player):
+        player.remove_cell(cell)
+    
     def unselect_cell(self):
         self.board.current_possible_moves = None
         self.board.selected_cell = None
@@ -84,10 +96,6 @@ class GameState:
         else:
             self.unselect_cell()
 
-    def has_saved_pieces(self):
-        player = self.get_current_player()
-        return player.get_stack_count() > 0
-
     def handle_saved_player_stack_selection(self, player):
         if player.stack_selected:
             self.unselect_saved_player_stack(player)
@@ -95,7 +103,7 @@ class GameState:
             self.select_saved_player_stack(player)
 
     def select_saved_player_stack(self, player):
-        if(not self.has_saved_pieces()):
+        if(not player.has_saved_pieces()):
             return
         player.select_stack()
     
@@ -115,6 +123,7 @@ class GameState:
             self.board.make_move(cell, self.get_current_player())
             if(not self.did_win()):
                 self.next_turn()
+                print("Cells: " + str(self.get_current_player().get_cells()))
         self.unselect_cell()
 
     # Function used specifically for the AI to calculate the tree
@@ -132,7 +141,7 @@ class GameState:
         return self.get_current_player().is_bot()
     
     def handle_easy_bot(self, bot):
-        if self.has_saved_pieces():
+        if bot.has_saved_pieces():
             self.handle_saved_player_stack_selection(bot)
             self.place_saved_piece(self.board.get_random_cell(), bot)
         else:

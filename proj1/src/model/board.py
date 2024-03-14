@@ -13,6 +13,9 @@ class Board:
         # TODO: Refactor so this is inside Player.py
         self.current_possible_moves = None
     
+    def update_board(self, new_board):
+        self.board = new_board
+
     def get_board(self):
         return self.board
 
@@ -60,6 +63,7 @@ class Board:
             for col in range(self.size):
                 if not self.is_on_edge(row, col):
                     self.make_stack(current_color)
+                    self.game_state.add_to_player_cells_color((row, col), current_color)
                     column_counter += 1
                     if column_counter % 2 == 0:
                         current_color = PIECE_BLUE if current_color == PIECE_ORANGE else PIECE_ORANGE

@@ -1,4 +1,5 @@
 from config import PIECE_BLUE, PIECE_ORANGE
+import numpy as np
 
 class Player:
     def __init__(self, color, player_type):
@@ -6,6 +7,16 @@ class Player:
         self.stack_pieces = 0
         self.player_type = player_type
         self.stack_selected = False
+        self.cells = np.empty((0, 2), int)
+
+    def get_cells(self):
+        return [tuple(cell) for cell in self.cells]
+
+    def add_cell(self, cell):
+        self.cells = np.append(self.cells, [cell], axis=0)
+
+    def remove_cell(self, cell):
+        self.cells = np.delete(self.cells, np.where(np.all(self.cells == cell, axis=1)), axis=0)
 
     def get_player_type(self):
         return self.player_type
@@ -18,6 +29,9 @@ class Player:
 
     def get_stack_count(self):
         return self.stack_pieces
+    
+    def has_saved_pieces(self):
+        return self.stack_pieces > 0
     
     def add_stack_piece(self):
         self.stack_pieces += 1
