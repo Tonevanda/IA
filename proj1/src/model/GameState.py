@@ -3,6 +3,7 @@ from controller.GameController import GameController
 from view.GameView import GameView
 from config import CELL_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT
 import random
+from time import sleep
 
 class GameState:
     def __init__(self, state, size, orange, blue):
@@ -87,8 +88,7 @@ class GameState:
         player = self.get_current_player()
         return player.get_stack_count() > 0
 
-    def handle_saved_player_stack_selection(self):
-        player = self.get_current_player()
+    def handle_saved_player_stack_selection(self, player):
         if player.stack_selected:
             self.unselect_saved_player_stack(player)
         else:
@@ -102,12 +102,11 @@ class GameState:
     def unselect_saved_player_stack(self, player):
         player.unselect_stack()
 
-    def place_saved_piece(self, cell):
-        current_player = self.get_current_player()
-        if current_player.stack_selected:
-            self.board.place_saved_piece(cell, current_player)
+    def place_saved_piece(self, cell, player):
+        if player.stack_selected:
+            self.board.place_saved_piece(cell, player)
             self.remove_from_player_stack()
-            self.unselect_saved_player_stack(current_player)
+            self.unselect_saved_player_stack(player)
             if(not self.did_win()):
                 self.next_turn()
 
@@ -123,46 +122,53 @@ class GameState:
         return None
 
     def make_move(self, cell):
-        if(self.get_current_player().stack_selected):
-            self.place_saved_piece(cell)
+        player = self.get_current_player()
+        if(player.stack_selected):
+            self.place_saved_piece(cell, player)
         else:
             self.move_stack(cell)
 
     def is_bot_playing(self):
         return self.get_current_player().is_bot()
     
-    def handle_easy_bot(self):
+    def handle_easy_bot(self, bot):
         if self.has_saved_pieces():
-            self.place_saved_piece(self.board.get_random_cell())
+            self.handle_saved_player_stack_selection(bot)
+            self.place_saved_piece(self.board.get_random_cell(), bot)
         else:
-            selectable_cells = self.board.get_selectable_cells(self.get_current_player())
+            selectable_cells = self.board.get_selectable_cells(bot)
             random_select = random.choice(selectable_cells)
             self.select_cell(random_select)
             movable_cells = self.board.current_possible_moves
             random_move = random.choice(movable_cells)
             self.move_stack(random_move)
 
-    def handle_medium_bot(self):
+    def handle_medium_bot(self, bot):
         pass
 
-    def handle_hard_bot(self):
+    def handle_hard_bot(self, bot):
         pass
             
     
-    def handle_bot(self):
-        if self.is_bot_playing():
-            bot = self.get_current_player()
-            if(bot.is_easy_bot()):
-                self.handle_easy_bot()
-            elif(bot.is_medium_bot()):
-                self.handle_medium_bot()
-            elif(bot.is_hard_bot()):
-                self.handle_hard_bot()
+    def handle_bot(self, bot):
+        sleep(0.2)
+        if(bot.is_easy_bot()):
+            self.handle_easy_bot(bot)
+        elif(bot.is_medium_bot()):
+            self.handle_medium_bot(bot)
+        elif(bot.is_hard_bot()):
+            self.handle_hard_bot(bot)
+
+    def handle_player(self):
+        player = self.get_current_player()
+        if player.is_bot():
+            self.handle_bot(player)
+        else:
+            self.gameController.handle_event(player)
+
+    def run(self, window):
+        self.handle_player()
+        self.gameView.draw(window)
 
     def to_quit(self):
         self.state.to_quit()
-
-    def run(self, window):
-        self.gameController.handle_event()
-        self.handle_bot()
-        self.gameView.draw(window)

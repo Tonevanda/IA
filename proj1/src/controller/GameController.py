@@ -10,8 +10,7 @@ class GameController:
         return (not self.game_state.board.is_none_stack(stack))
 
     # TODO: Maybe don't use pygame.mouse.get_pos() and replace with cell
-    def clicked_saved_player_stack(self):
-        player = self.game_state.get_current_player()
+    def clicked_saved_player_stack(self, player):
         mouse_pos = pygame.mouse.get_pos()
 
         if player.get_color() == 'Orange':
@@ -21,9 +20,9 @@ class GameController:
 
         return check_rect.collidepoint(mouse_pos)
 
-    def handle_click(self, cell):
-        if self.clicked_saved_player_stack():
-            self.game_state.handle_saved_player_stack_selection()
+    def handle_click(self, cell, player):
+        if self.clicked_saved_player_stack(player):
+            self.game_state.handle_saved_player_stack_selection(player)
         elif cell == (-1,-1):
             self.game_state.unselect_cell()
         else:    
@@ -36,9 +35,10 @@ class GameController:
                 self.game_state.unselect_cell()
                 
 
-    def handle_event(self):
+    def handle_event(self, player):
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
-                self.handle_click(self.game_state.get_pos(event.pos))
+                cell = self.game_state.get_pos(event.pos)
+                self.handle_click(cell, player)
             if event.type == pygame.QUIT:
                 self.game_state.to_quit()
