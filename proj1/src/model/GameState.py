@@ -158,8 +158,11 @@ class GameState:
                 self.handle_medium_bot()
             elif(bot.is_hard_bot()):
                 self.handle_hard_bot()
-        
-    def run(self, event, window):
-        self.gameController.handle_event(event)
+
+    def to_quit(self):
+        self.state.to_quit()
+
+    def run(self, window):
+        self.gameController.handle_event()
         self.handle_bot()
         self.gameView.draw(window)

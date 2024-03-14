@@ -37,6 +37,9 @@ class SelectMenuState:
             case "Hard Bot":
                 self.selected_blue = 3
 
-    def run(self, event, window):
-        self.controller.handle_event(event)
+    def to_quit(self):
+        self.state_manager.to_quit()
+
+    def run(self, window):
+        self.controller.handle_event()
         self.view.draw(window)

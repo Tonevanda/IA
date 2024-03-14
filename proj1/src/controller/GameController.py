@@ -36,6 +36,9 @@ class GameController:
                 self.game_state.unselect_cell()
                 
 
-    def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            self.handle_click(self.game_state.get_pos(event.pos))
+    def handle_event(self):
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                self.handle_click(self.game_state.get_pos(event.pos))
+            if event.type == pygame.QUIT:
+                self.game_state.to_quit()

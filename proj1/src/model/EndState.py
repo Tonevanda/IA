@@ -14,6 +14,6 @@ class EndState:
     def to_quit(self):
         self.state.to_quit()
 
-    def run(self, event, window):
+    def run(self, window):
         self.endView.draw(window, self.winner)
-        self.endController.handle_event(event)
+        self.endController.handle_event()

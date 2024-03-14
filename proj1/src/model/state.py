@@ -7,8 +7,8 @@ class State:
     def __init__(self):
         self.current_state = MainMenuState(self)
 
-    def run(self, event, window):
-        self.current_state.run(event, window)
+    def run(self, window):
+        self.current_state.run(window)
 
     def to_select_menu(self):
         if isinstance(self.current_state, MainMenuState):

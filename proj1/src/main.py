@@ -13,13 +13,10 @@ def start(window):
     
     running = True
     while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            else:
-                state.run(event, window)
-                if(state.get_state() == None):
-                    running = False
+        state.run(window)
+        if(state.get_state() == None):
+            running = False
+
         pygame.display.flip()
     pygame.quit()
 

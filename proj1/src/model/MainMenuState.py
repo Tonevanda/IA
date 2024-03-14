@@ -13,6 +13,6 @@ class MainMenuState:
     def to_quit(self):
         self.state_manager.to_quit()
 
-    def run(self, event, window):
-        self.controller.handle_event(event)
+    def run(self, window):
+        self.controller.handle_event()
         self.view.draw(window)
