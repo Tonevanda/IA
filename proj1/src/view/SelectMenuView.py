@@ -21,8 +21,18 @@ class SelectMenuView:
             text = self.font.render(player_type, 1, (10, 10, 10))
             window.blit(text, (50 + i * 150, 50))
 
-        
-        play_button = pygame.Rect(50, 300, 150, 50)
+        text = self.font.render("Select the size of the board:", 1, (10, 10, 10))
+        window.blit(text, (50, 300))
+        for i, size in enumerate([6, 8, 10, 12]):
+            rect = pygame.Rect(50 + i * 150, 340, 80, 80)
+            pygame.draw.rect(window, (100, 100, 100), rect)  # Gray box
+            if i == self.select_menu_state.selected_size:  # Highlight the selected size
+                pygame.draw.rect(window, (0, 0, 0), rect, 2)  # Border for selected box
+
+            text = self.font.render(str(size), 1, (10, 10, 10))
+            window.blit(text, (60 + i * 150, 350))
+
+        play_button = pygame.Rect(50, 450, 150, 50)
         pygame.draw.rect(window, (0, 255, 0), play_button)
         play_text = self.font.render("Start Game", 1, (10, 10, 10))
-        window.blit(play_text, (60, 310))
+        window.blit(play_text, (60, 460))

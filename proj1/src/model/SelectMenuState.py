@@ -1,6 +1,7 @@
 from model.Player import Player
 from controller.SelectMenuController import SelectMenuController
 from view.SelectMenuView import SelectMenuView
+from config import *
 
 class SelectMenuState:
     def __init__(self, state_manager):
@@ -8,12 +9,12 @@ class SelectMenuState:
         self.player_types = ["Player", "Easy Bot", "Medium Bot", "Hard Bot"]
         self.selected_orange = 0    # Index of the currently selected player 1 (orange)
         self.selected_blue = 0      # Index of the currently selected player 2 (blue)
-        self.size = 8
+        self.selected_size = 0
         self.controller = SelectMenuController(self)
         self.view = SelectMenuView(self)
 
     def start_game(self):
-        self.state_manager.start_game(self.size, Player('Orange', self.player_types[self.selected_orange]), Player('Blue', self.player_types[self.selected_blue]))
+        self.state_manager.start_game(STACK_SIZES[self.selected_size], Player('Orange', self.player_types[self.selected_orange]), Player('Blue', self.player_types[self.selected_blue]))
 
     def update_selected_orange(self, player):
         match player:
@@ -36,6 +37,9 @@ class SelectMenuState:
                 self.selected_blue = 2
             case "Hard Bot":
                 self.selected_blue = 3
+    
+    def update_selected_size(self, size):
+        self.selected_size = size
 
     def to_quit(self):
         self.state_manager.to_quit()

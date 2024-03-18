@@ -17,8 +17,14 @@ class SelectMenuController:
                         self.select_menu_state.update_selected_orange(player_type)
                     elif rect_blue.collidepoint(mouse_pos):
                         self.select_menu_state.update_selected_blue(player_type)
+
+                for i, size in enumerate([6, 8, 10, 12]):
+                    rect_size = pygame.Rect(50 + i * 150, 340, 80, 80)
+
+                    if rect_size.collidepoint(mouse_pos):
+                        self.select_menu_state.update_selected_size(i)  # Update the selected size
                 
-                play_button = pygame.Rect(50, 300, 150, 50)
+                play_button = pygame.Rect(50, 450, 150, 50)
                 if play_button.collidepoint(mouse_pos):
                     self.select_menu_state.start_game()
             if event.type == pygame.QUIT:
