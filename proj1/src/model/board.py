@@ -1,4 +1,4 @@
-from config import PIECE_BLUE, PIECE_ORANGE, PIECE_EMPTY, PIECE_NONE, STACK_MASK
+from config import PIECE_BLUE, PIECE_ORANGE, PIECE_EMPTY, STACK_MASKS, STACK_MAX_SIZES
 import random
 from model.Move import Move
 import numpy as np
@@ -7,6 +7,8 @@ class Board:
     def __init__(self, game_state, size):
         self.game_state = game_state
         self.size = size
+        self.stack_size = STACK_MAX_SIZES[size]
+        self.stack_mask = STACK_MASKS[size]
         self.board = 0b0
         self.make_board()
         self.placeable_cells = self.get_placeable_cells()
@@ -40,6 +42,7 @@ class Board:
         new_board = Board.__new__(Board)  # Create a new Board instance without calling __init__
         new_board.game_state = self.game_state  # Copy game_state reference
         new_board.size = self.size  # Copy size
+        new_board.stack_size = self.stack_size  # Copy stack_size
         new_board.board = self.board  # Copy board state
         new_board.placeable_cells = list(self.placeable_cells)  # Create a new list from placeable_cells
         new_board.selected_cell = self.selected_cell  # Copy selected_cell
@@ -77,10 +80,8 @@ class Board:
         self.board |= color
 
     def make_stack(self, color):
-        self.make_piece(PIECE_EMPTY)
-        self.make_piece(PIECE_EMPTY)
-        self.make_piece(PIECE_EMPTY)
-        self.make_piece(PIECE_EMPTY)
+        for _ in range(self.stack_size - 1):
+            self.make_piece(PIECE_EMPTY)
         self.make_piece(color)
 
     def make_board(self):
@@ -100,10 +101,8 @@ class Board:
                 else:
                     if(first):
                         self.board |= PIECE_EMPTY
-                        self.make_piece(PIECE_EMPTY)
-                        self.make_piece(PIECE_EMPTY)
-                        self.make_piece(PIECE_EMPTY)
-                        self.make_piece(PIECE_EMPTY)
+                        for i in range(self.stack_size - 2):
+                            self.make_piece(PIECE_EMPTY)
                         first = False
                     else:
                         self.make_stack(PIECE_EMPTY)
@@ -119,8 +118,8 @@ class Board:
     
 
     def substitute_stack(self, stack_position, new_stack):
-        self.board &= ~(STACK_MASK << (stack_position * 10))
-        self.board |= (new_stack << (stack_position * 10))
+        self.board &= ~(self.stack_mask << (stack_position * self.stack_size * 2))
+        self.board |= (new_stack << (stack_position * self.stack_size * 2))
 
     def get_bitmap_position(self, row, col):
         return row * self.size + col
@@ -130,7 +129,7 @@ class Board:
             for j in range(self.size):
                 bitmap_position = self.get_bitmap_position(i, j)
                 if(self.is_outside_board((i,j))):
-                    self.substitute_stack(bitmap_position, STACK_MASK)
+                    self.substitute_stack(bitmap_position, self.stack_mask)
 
     def is_outside_board(self, cell):
         cut = int(self.size * 0.25)
@@ -148,14 +147,14 @@ class Board:
     def get_stack(self, cell):
         row, col = cell
         bitmap_pos = self.get_bitmap_position(row, col)
-        return (self.board >> (bitmap_pos * 10)) & STACK_MASK
+        return (self.board >> (bitmap_pos * self.stack_size * 2)) & self.stack_mask
 
     # TODO: All this functions could be inside Stack.py to be better organized (but not turning it into an object)
     def is_none_stack(self, stack):
-        return stack == STACK_MASK
+        return stack == self.stack_mask
     
     def is_empty_stack(self, stack):
-        return (stack ^ STACK_MASK) == STACK_MASK
+        return (stack ^ self.stack_mask) == self.stack_mask
 
     def get_selected_cell(self):
         return self.selected_cell
@@ -196,7 +195,7 @@ class Board:
         stack_pieces = self.get_stack_size(stack)-1
         for i in range(num_pieces):
             stack &= ~(0b11 << ((stack_pieces-i) * 2))
-        return stack & STACK_MASK
+        return stack & self.stack_mask
 
     def get_removed_from_stack(self, stack, num_pieces):
         removed = 0b0
@@ -225,10 +224,10 @@ class Board:
                 self.game_state.add_to_player_stack()
 
     def handle_stack_size_limit(self, stack, bitmap_position) -> None:
-        if(self.get_stack_size(stack) > 5):
-            overflow = self.get_stack_size(stack) - 5
-            rest = stack & ~(STACK_MASK << overflow*2)
-            stack = (stack & (STACK_MASK << overflow*2)) >> (overflow*2)
+        if(self.get_stack_size(stack) > self.stack_size):
+            overflow = self.get_stack_size(stack) - self.stack_size
+            rest = stack & ~(self.stack_mask << overflow*2)
+            stack = (stack & (self.stack_mask << overflow*2)) >> (overflow*2)
             self.handle_removed_pieces(rest)
         print("Substituting stack to: ", bin(stack))
         self.substitute_stack(bitmap_position, stack)

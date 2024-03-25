@@ -14,7 +14,7 @@ class SelectMenuState:
         self.view = SelectMenuView(self)
 
     def start_game(self):
-        self.state_manager.start_game(STACK_SIZES[self.selected_size], Player('Orange', self.player_types[self.selected_orange]), Player('Blue', self.player_types[self.selected_blue]))
+        self.state_manager.start_game(BOARD_SIZES[self.selected_size], Player('Orange', self.player_types[self.selected_orange]), Player('Blue', self.player_types[self.selected_blue]))
 
     def update_selected_orange(self, player):
         match player:

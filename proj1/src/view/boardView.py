@@ -1,5 +1,5 @@
 import pygame
-from config import SCREEN_WIDTH, SCREEN_HEIGHT, CELL_SIZE, PIECE_ORANGE, PIECE_BLUE
+from config import CELL_SIZE, PIECE_ORANGE, PIECE_BLUE
 
 class BoardView:
     def __init__(self, board_model, starting_cell):
@@ -14,7 +14,7 @@ class BoardView:
                 stack = self.board.get_stack((i, j))
                 if(not self.board.is_none_stack(stack)):
                     pygame.draw.rect(window, (0, 0, 0), (self.starting_cell_x + j * CELL_SIZE, self.starting_cell_y + i * CELL_SIZE, CELL_SIZE, CELL_SIZE), 2)
-                    for k in range(5):
+                    for k in range(self.board.get_stack_size(stack)):
                         piece = (stack & (0b11 << (k * 2))) >> (k * 2)
                         if piece == PIECE_ORANGE:
                             color = (255, 100, 0)
