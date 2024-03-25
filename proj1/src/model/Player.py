@@ -21,8 +21,8 @@ class Player:
             self.cells = np.append(self.cells, [cell], axis=0)
 
     def remove_cell(self, cell):
-        self.cells = np.delete(self.cells, np.where(np.all(self.cells == cell, axis=1)), axis=0)
-        #print("Removed from player ", self.color, " cell: ", cell, " cells: ", self.cells)
+        cell = np.array(cell)
+        self.cells = np.array([existing_cell for existing_cell in self.cells if not np.array_equal(cell, existing_cell)])
 
     def get_player_type(self):
         return self.player_type

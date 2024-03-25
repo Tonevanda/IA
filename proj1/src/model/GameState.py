@@ -41,7 +41,7 @@ class GameState:
         return cell_x >= self.board.get_size() or cell_y >= self.board.get_size() or cell_x < 0 or cell_y < 0
 
     # Takes a pixel and returns the position of the corresponding cell
-    def get_pos(self, pixel):
+    def get_pos(self, pixel: tuple) -> tuple:
         x, y = pixel
         (starting_cell_x,starting_cell_y) = self.get_starting_cell()
         cell_y = (x-starting_cell_x) // CELL_SIZE # Represents Columns
@@ -66,8 +66,8 @@ class GameState:
         return False
 
     def verify_win(self):
-        #print(str(self.get_next_player()), " cells:")
-        #print(self.get_next_player().get_cells())
+        print(str(self.get_next_player()), " cells:")
+        print(self.get_next_player().get_cells())
         return (self.get_next_player().get_stack_count() == 0 and len(self.get_next_player().get_cells()) == 0)
     
     def add_to_player_stack(self):
@@ -154,18 +154,16 @@ class GameState:
         else:
             selectable_cells = bot.get_cells()
             selectable_cells_board = self.board.get_player_cells(bot)
+
             random_select = tuple(random.choice(selectable_cells))
             random_board = random.choice(selectable_cells_board)
-
-            print("Cells type: " + str(type(random_select)) + " Board cell type: " + str(type(random_board)))
-            print("Player Selected cell: ", random_select)
-            print("Board Selected cell: ", random_board)
 
             #self.select_cell(random_select)
             self.select_cell(random_board)
             movable_cells = self.board.current_possible_moves
             random_move = random.choice(movable_cells)
-            self.make_move(random_move)
+            self.move_stack(random_move)
+            print("Moved from: " + str(random_select) + " to " + str(random_move))
 
     def handle_medium_bot(self, bot):
 

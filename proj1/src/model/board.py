@@ -230,6 +230,7 @@ class Board:
             rest = stack & ~(STACK_MASK << overflow*2)
             stack = (stack & (STACK_MASK << overflow*2)) >> (overflow*2)
             self.handle_removed_pieces(rest)
+        print("Substituting stack to: ", bin(stack))
         self.substitute_stack(bitmap_position, stack)
         
 
@@ -237,13 +238,17 @@ class Board:
         source_pos = self.get_bitmap_position(source[0], source[1])
         destination_pos = self.get_bitmap_position(destination[0], destination[1])
         distance = self.get_distance_between_cells(source, destination)
+        print("Source pos: ", source_pos, " Destination pos: ", destination_pos, " Distance: ", distance)
 
         source_stack = self.get_stack(source)
         destination_stack = self.get_stack(destination)
+        print("Source stack: ", bin(source_stack), " Destination stack: ", bin(destination_stack))
 
         new_source_stack = self.remove_from_stack(source_stack, distance)
         removed_stack = self.get_removed_from_stack(source_stack, distance)
         new_destination_stack = self.add_pieces_to_stack(destination_stack, removed_stack)
+        print("New source stack: ", bin(new_source_stack), " New destination stack: ", bin(new_destination_stack))
+        print("Removed stack: ", bin(removed_stack))
 
         # Add the destination of the moving stack to the current player's cells
         self.game_state.add_to_player_cells(destination, self.game_state.get_current_player())
@@ -254,6 +259,7 @@ class Board:
 
         # Replace the source stack with the new source stack
         self.substitute_stack(source_pos, new_source_stack)
+        print("Substituted source stack")
 
         # if the source stack now belongs to the opponent, add it to the opponent's cells and remove it from the current player's cells
         if(self.is_player_stack(source, self.game_state.get_next_player())):
@@ -263,6 +269,7 @@ class Board:
             self.game_state.remove_from_player_cells(source, self.game_state.get_current_player())
 
         self.handle_stack_size_limit(new_destination_stack, destination_pos)
+        print("Substituted destination stack")
 
     def place_saved_piece(self, cell, player):
         destination_pos = self.get_bitmap_position(cell[0], cell[1])
