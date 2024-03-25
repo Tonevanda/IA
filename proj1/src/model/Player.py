@@ -10,7 +10,7 @@ class Player:
         self.cells = np.empty((0, 2), int)
 
     def get_cells(self):
-        return [tuple(cell) for cell in self.cells]
+        return self.cells
 
     def add_cell(self, cell):
         self.cells = np.append(self.cells, [cell], axis=0)

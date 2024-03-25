@@ -63,7 +63,7 @@ class GameState:
         return False
 
     def verify_win(self):
-        return (self.get_next_player().get_stack_count() == 0 and self.board.verify_lost(self.get_next_player()))
+        return (self.get_next_player().get_stack_count() == 0 and len(self.get_next_player().get_cells()) == 0)
     
     def add_to_player_stack(self):
         current_player = self.get_current_player()
@@ -147,7 +147,7 @@ class GameState:
             self.handle_saved_player_stack_selection(bot)
             self.place_saved_piece(self.board.get_random_cell(), bot)
         else:
-            selectable_cells = self.board.get_selectable_cells(bot)
+            selectable_cells = bot.get_cells()
             random_select = random.choice(selectable_cells)
             self.select_cell(random_select)
             movable_cells = self.board.current_possible_moves
@@ -172,15 +172,18 @@ class GameState:
                 new_state.select_cell(initial_position)
                 new_state.make_move(destination)
 
-            print("Move: " + str(move))
-            move_value = self.minimax(new_state, 2, float('-inf'), float('inf'), False, player, opponent)
+            #print("Move: " + str(move))
+            move_value = self.minimax(new_state, 0, float('-inf'), float('inf'), False, player, opponent)
 
             if move_value > best_value:
                 best_value = move_value
                 best_move = move
 
+        print("Best Move: " + str(best_move))
         self.select_cell(best_move.get_origin())
+        print("Selected Origin: " + str(best_move.get_origin()))
         self.make_move(best_move.get_destination())
+        print("Selected Destination: " + str(best_move.get_destination()))
 
     def handle_hard_bot(self, bot):
         pass
@@ -210,7 +213,7 @@ class GameState:
 
     def eval(self, player, opponent) -> int:
         # Pieces in the personal stack are more valuable than pieces on the board
-        return ((player.get_stack_count() - opponent.get_stack_count()) * 10 + len(self.board.get_selectable_cells(player)) - len(self.board.get_selectable_cells(opponent)))
+        return (player.get_stack_count() - opponent.get_stack_count()) * 10 + len(player.get_cells()) - len(opponent.get_cells())
     
     def minimax(self, state, depth, alpha, beta, maximizingPlayer, player, opponent):
         if depth == 0 or state.verify_win():

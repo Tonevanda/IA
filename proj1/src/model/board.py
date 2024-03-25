@@ -1,6 +1,7 @@
 from config import PIECE_BLUE, PIECE_ORANGE, PIECE_EMPTY, PIECE_NONE, STACK_MASK
 import random
 from model.Move import Move
+import numpy as np
 
 class Board:
     def __init__(self, game_state, size):
@@ -15,19 +16,19 @@ class Board:
         # TODO: Refactor so this is inside Player.py
         self.current_possible_moves = None
     
-    def update_board(self, new_board):
+    def update_board(self, new_board: 'Board') -> None:
         self.board = new_board
 
-    def get_board(self):
+    def get_board(self) -> int:
         return self.board
 
-    def get_size(self):
+    def get_size(self) -> int:
         return self.size
     
-    def get_total_cells(self):
+    def get_total_cells(self) -> int:
         return self.size * self.size
     
-    def copy(self):
+    def copy(self) -> 'Board':
         new_board = Board(self.game_state, self.size)
         new_board.update_board(self.board)
         return new_board
@@ -55,7 +56,8 @@ class Board:
 
     # Checks if the cell is on the edge of the board
     def is_on_edge(self, row, col):
-        return row == 0 or row == self.size-1 or col == 0 or col == self.size-1
+        cut = int(self.size * 0.25)
+        return (row == 0 or row < cut-1) or (row == self.size-1 or row > self.size-cut) or (col == 0 or col < (cut-1)) or (col == self.size-1 or col > self.size-cut)
     
     def make_piece(self, color):
         self.board <<= 2
@@ -101,6 +103,17 @@ class Board:
 
         self.make_hexagon()
 
+    def make_hexagon(self):
+        
+        none_stack = STACK_MASK
+
+        for i in range(self.size):
+            for j in range(self.size):
+                bitmap_position = self.get_bitmap_position(i, j)
+                if(self.is_outside_board((i,j))):
+                    self.substitute_stack(bitmap_position, none_stack)
+                    #self.game_state.remove_from_player_cells((i,j))
+
     def substitute_stack(self, stack_position, new_stack):
         self.board &= ~(STACK_MASK << (stack_position * 10))
         self.board |= (new_stack << (stack_position * 10))
@@ -119,16 +132,6 @@ class Board:
             return True
         elif i >= self.size - cut and j > self.size - (cut - (self.size - i - 1)) - 1:
             return True
-
-    def make_hexagon(self):
-        
-        none_stack = STACK_MASK
-
-        for i in range(self.size):
-            for j in range(self.size):
-                bitmap_position = self.get_bitmap_position(i, j)
-                if(self.is_outside_board((i,j))):
-                    self.substitute_stack(bitmap_position, none_stack)
 
     # Takes a position and returns the stack at that position
     def get_stack(self, cell):
@@ -210,7 +213,7 @@ class Board:
             if piece == self.game_state.get_current_player().get_color_bits():
                 self.game_state.add_to_player_stack()
 
-    def handle_stack_size_limit(self, stack, bitmap_position):
+    def handle_stack_size_limit(self, stack, bitmap_position) -> None:
         if(self.get_stack_size(stack) > 5):
             overflow = self.get_stack_size(stack) - 5
             rest = stack & ~(STACK_MASK << overflow*2)
@@ -219,7 +222,7 @@ class Board:
         self.substitute_stack(bitmap_position, stack)
         
 
-    def transfer_pieces(self, source, destination):
+    def transfer_pieces(self, source: tuple, destination: tuple) -> None:
         source_pos = self.get_bitmap_position(source[0], source[1])
         destination_pos = self.get_bitmap_position(destination[0], destination[1])
         distance = self.get_distance_between_cells(source, destination)
@@ -231,12 +234,17 @@ class Board:
         removed_stack = self.get_removed_from_stack(source_stack, distance)
         new_destination_stack = self.add_pieces_to_stack(destination_stack, removed_stack)
 
+        self.game_state.add_to_player_cells(destination, self.game_state.get_current_player())
+        self.game_state.remove_from_player_cells(destination, self.game_state.get_next_player())
+        if(not self.is_player_stack(source, self.game_state.get_current_player())):
+            self.game_state.remove_from_player_cells(source, self.game_state.get_current_player())
+            self.game_state.add_to_player_cells(source, self.game_state.get_next_player())
+
         self.substitute_stack(source_pos, new_source_stack)
         self.handle_stack_size_limit(new_destination_stack, destination_pos)
 
     def place_saved_piece(self, cell, player):
         destination_pos = self.get_bitmap_position(cell[0], cell[1])
-        print("place saved piece")
 
         destination_stack = self.get_stack(cell)
         new_destination_stack = self.add_pieces_to_stack(destination_stack, player.get_color_bits())
@@ -259,29 +267,21 @@ class Board:
             return False
         stack >>= (num_pieces-1)*2
         return (stack&0b11) == color
-
-    # Checks if the board has any pieces of a given player
-    # TODO: before this, make "winnable move function" that verifies if the last move was a capture and didn't reveal a new opponent piece
-    # TODO: Do this also with bit operations
-    def verify_lost(self, player):
-        for i in range(self.size):
-            for j in range(self.size):
-                if self.is_player_stack((i, j), player):
-                    return False
-        return True
     
     # TODO: Isto é muito mau, devíamos dar refactor geral para qualquer move ser da classe Move
-    def get_valid_moves(self, player):
+    def get_valid_moves(self, player) -> np.ndarray:
         valid_moves = []
-        movable_cells = self.get_selectable_cells(player)
+        movable_cells = player.get_cells()
         # Represents moves with board piece
         for cell in movable_cells:
-            moves = self.get_possible_moves(cell)
+            #print("Cell: " + str(cell))
+            moves = self.get_possible_moves(tuple(cell))  # Convert cell to a tuple
             if moves is not None:
-                valid_moves.extend([Move(cell, move) for move in moves])
+                valid_moves.extend([Move(tuple(cell), move) for move in moves])
 
         # Represents moves with saved pieces
         if player.has_saved_pieces():
-            valid_moves.extend([Move((None, None), cell, True) for cell in self.placeable_cells])
-        return valid_moves
+            valid_moves.extend([Move((None, None), tuple(cell), True) for cell in self.placeable_cells])
+
+        return np.array(valid_moves)
             
