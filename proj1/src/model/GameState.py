@@ -153,13 +153,18 @@ class GameState:
             self.place_saved_piece(self.board.get_random_cell(), bot)
         else:
             selectable_cells = bot.get_cells()
-            selectable_cells_board = self.board.get_player_cells(bot)
+            selectable_cells_board = self.board.get_selectable_cells(bot)
+            selectable_cells_bitboard = self.board.get_bitboard_selectable_cells(bot)
+
+            print ("Selectable Cells Bitboard: " + str(selectable_cells_bitboard))
 
             random_select = tuple(random.choice(selectable_cells))
             random_board = random.choice(selectable_cells_board)
+            random_bitboard = random.choice(selectable_cells_bitboard)
 
-            self.select_cell(random_select)
+            #self.select_cell(random_select)
             #self.select_cell(random_board)
+            self.select_cell(random_bitboard)
             movable_cells = self.board.current_possible_moves
             random_move = random.choice(movable_cells)
             self.move_stack(random_move)

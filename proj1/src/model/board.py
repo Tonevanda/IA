@@ -28,14 +28,6 @@ class Board:
     def get_size(self) -> int:
         return self.size
     
-    def get_player_cells(self, player):
-        cells = []
-        for i in range(self.size):
-            for j in range(self.size):
-                if self.is_player_stack((i, j), player):
-                    cells.append((i, j))
-        return cells
-    
     def get_total_cells(self) -> int:
         return self.size * self.size
     
@@ -62,6 +54,26 @@ class Board:
                 if self.is_player_stack((i, j), player):
                     cells.append((i, j))
         return cells
+    
+    def get_bitboard_selectable_cells(self, player: 'Player') -> list[tuple]:
+        cells = []
+        for i in range(self.size*self.size):
+            stack = self.get_bitboard_stack(i)
+            if self.is_player_stack_bitboard(stack, player):
+                cells.append((i//self.size, i%self.size))
+        return cells
+
+    # Returns the stack at a given position in the bitboard (bitmap)
+    def get_bitboard_stack(self, bitboard_pos: int) -> int:
+        return (self.board >> (bitboard_pos * self.stack_size * 2)) & self.stack_mask
+
+    def is_player_stack_bitboard(self, stack: int, player: 'Player') -> bool:
+        num_pieces = self.get_stack_size(stack) # Get the number of pieces in the stack
+        if num_pieces == 0: # If the stack is empty, it doesn't belong to the player
+            return False
+        color = player.get_color_bits() # Get the color bits of the player
+        stack >>= (num_pieces-1)*2 # Get the top piece of the stack
+        return (stack&0b11) == color # Return if the top piece of the stack is the player's color
 
     # Returns all the cells that are placeable (aka all of them that are not NONE)
     def get_placeable_cells(self) -> list[tuple]:
