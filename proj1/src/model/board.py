@@ -48,7 +48,7 @@ class Board:
 
     # TODO: better way where it takes into account the cuts
     def get_random_cell(self):
-        return (random.randint(0, self.size-1), random.randint(0, self.size-1))
+        return random.choice(self.placeable_cells)
 
     # TODO: better way taking advantage of bitmap?
     def get_selectable_cells(self, player):

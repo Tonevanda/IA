@@ -158,8 +158,8 @@ class GameState:
             random_select = tuple(random.choice(selectable_cells))
             random_board = random.choice(selectable_cells_board)
 
-            #self.select_cell(random_select)
-            self.select_cell(random_board)
+            self.select_cell(random_select)
+            #self.select_cell(random_board)
             movable_cells = self.board.current_possible_moves
             random_move = random.choice(movable_cells)
             self.move_stack(random_move)
