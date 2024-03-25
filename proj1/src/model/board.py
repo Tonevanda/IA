@@ -25,12 +25,25 @@ class Board:
     def get_size(self) -> int:
         return self.size
     
+    def get_player_cells(self, player):
+        cells = []
+        for i in range(self.size):
+            for j in range(self.size):
+                if self.is_player_stack((i, j), player):
+                    cells.append((i, j))
+        return cells
+    
     def get_total_cells(self) -> int:
         return self.size * self.size
     
     def copy(self) -> 'Board':
-        new_board = Board(self.game_state, self.size)
-        new_board.update_board(self.board)
+        new_board = Board.__new__(Board)  # Create a new Board instance without calling __init__
+        new_board.game_state = self.game_state  # Copy game_state reference
+        new_board.size = self.size  # Copy size
+        new_board.board = self.board  # Copy board state
+        new_board.placeable_cells = list(self.placeable_cells)  # Create a new list from placeable_cells
+        new_board.selected_cell = self.selected_cell  # Copy selected_cell
+        new_board.current_possible_moves = list(self.current_possible_moves) if self.current_possible_moves else None  # Create a new list from current_possible_moves
         return new_board
 
     # TODO: better way where it takes into account the cuts
@@ -103,16 +116,7 @@ class Board:
 
         self.make_hexagon()
 
-    def make_hexagon(self):
-        
-        none_stack = STACK_MASK
-
-        for i in range(self.size):
-            for j in range(self.size):
-                bitmap_position = self.get_bitmap_position(i, j)
-                if(self.is_outside_board((i,j))):
-                    self.substitute_stack(bitmap_position, none_stack)
-                    #self.game_state.remove_from_player_cells((i,j))
+    
 
     def substitute_stack(self, stack_position, new_stack):
         self.board &= ~(STACK_MASK << (stack_position * 10))
@@ -120,6 +124,13 @@ class Board:
 
     def get_bitmap_position(self, row, col):
         return row * self.size + col
+
+    def make_hexagon(self):
+        for i in range(self.size):
+            for j in range(self.size):
+                bitmap_position = self.get_bitmap_position(i, j)
+                if(self.is_outside_board((i,j))):
+                    self.substitute_stack(bitmap_position, STACK_MASK)
 
     def is_outside_board(self, cell):
         cut = int(self.size * 0.25)
@@ -234,13 +245,23 @@ class Board:
         removed_stack = self.get_removed_from_stack(source_stack, distance)
         new_destination_stack = self.add_pieces_to_stack(destination_stack, removed_stack)
 
+        # Add the destination of the moving stack to the current player's cells
         self.game_state.add_to_player_cells(destination, self.game_state.get_current_player())
-        self.game_state.remove_from_player_cells(destination, self.game_state.get_next_player())
-        if(not self.is_player_stack(source, self.game_state.get_current_player())):
+        
+        # if the destination belonged to the opponent, remove it from the opponent's cells
+        if(self.is_player_stack(destination, self.game_state.get_next_player())):
+            self.game_state.remove_from_player_cells(destination, self.game_state.get_next_player())
+
+        # Replace the source stack with the new source stack
+        self.substitute_stack(source_pos, new_source_stack)
+
+        # if the source stack now belongs to the opponent, add it to the opponent's cells and remove it from the current player's cells
+        if(self.is_player_stack(source, self.game_state.get_next_player())):
             self.game_state.remove_from_player_cells(source, self.game_state.get_current_player())
             self.game_state.add_to_player_cells(source, self.game_state.get_next_player())
+        elif(self.is_empty_stack(new_source_stack)): # if the source stack is now empty, remove it from the current player's cells
+            self.game_state.remove_from_player_cells(source, self.game_state.get_current_player())
 
-        self.substitute_stack(source_pos, new_source_stack)
         self.handle_stack_size_limit(new_destination_stack, destination_pos)
 
     def place_saved_piece(self, cell, player):
@@ -249,6 +270,12 @@ class Board:
         destination_stack = self.get_stack(cell)
         new_destination_stack = self.add_pieces_to_stack(destination_stack, player.get_color_bits())
         
+        # Add the destination of the moving stack to the current player's cells
+        self.game_state.add_to_player_cells(cell, self.game_state.get_current_player())
+        # if the destination belonged to the opponent, remove it from the opponent's cells
+        if(self.is_player_stack(cell, self.game_state.get_next_player())):
+            self.game_state.remove_from_player_cells(cell, self.game_state.get_next_player())
+
         self.handle_stack_size_limit(new_destination_stack, destination_pos)
 
     def make_move(self, pos, current_player):
@@ -274,7 +301,6 @@ class Board:
         movable_cells = player.get_cells()
         # Represents moves with board piece
         for cell in movable_cells:
-            #print("Cell: " + str(cell))
             moves = self.get_possible_moves(tuple(cell))  # Convert cell to a tuple
             if moves is not None:
                 valid_moves.extend([Move(tuple(cell), move) for move in moves])

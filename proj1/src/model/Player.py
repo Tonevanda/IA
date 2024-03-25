@@ -11,12 +11,18 @@ class Player:
 
     def get_cells(self):
         return self.cells
-
+    
+    def get_tuple_cells(self):
+        return [tuple(cell) for cell in self.cells]
+    
     def add_cell(self, cell):
-        self.cells = np.append(self.cells, [cell], axis=0)
+        cell = np.array(cell)  # Convert cell to a numpy array
+        if not any(np.array_equal(cell, existing_cell) for existing_cell in self.cells):
+            self.cells = np.append(self.cells, [cell], axis=0)
 
     def remove_cell(self, cell):
         self.cells = np.delete(self.cells, np.where(np.all(self.cells == cell, axis=1)), axis=0)
+        #print("Removed from player ", self.color, " cell: ", cell, " cells: ", self.cells)
 
     def get_player_type(self):
         return self.player_type

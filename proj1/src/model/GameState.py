@@ -20,9 +20,12 @@ class GameState:
         self.turn = 1
 
     def copy(self):
-        new_state = GameState(self.state, self.board.size, self.orange, self.blue)
+        new_state = GameState.__new__(GameState)
+        new_state.state = self.state
         new_state.turn = self.turn
         new_state.board = self.board.copy()
+        new_state.orange = copy.deepcopy(self.orange)
+        new_state.blue = copy.deepcopy(self.blue)
         return new_state
 
     def get_starting_cell(self):
@@ -63,6 +66,8 @@ class GameState:
         return False
 
     def verify_win(self):
+        #print(str(self.get_next_player()), " cells:")
+        #print(self.get_next_player().get_cells())
         return (self.get_next_player().get_stack_count() == 0 and len(self.get_next_player().get_cells()) == 0)
     
     def add_to_player_stack(self):
@@ -148,11 +153,19 @@ class GameState:
             self.place_saved_piece(self.board.get_random_cell(), bot)
         else:
             selectable_cells = bot.get_cells()
-            random_select = random.choice(selectable_cells)
-            self.select_cell(random_select)
+            selectable_cells_board = self.board.get_player_cells(bot)
+            random_select = tuple(random.choice(selectable_cells))
+            random_board = random.choice(selectable_cells_board)
+
+            print("Cells type: " + str(type(random_select)) + " Board cell type: " + str(type(random_board)))
+            print("Player Selected cell: ", random_select)
+            print("Board Selected cell: ", random_board)
+
+            #self.select_cell(random_select)
+            self.select_cell(random_board)
             movable_cells = self.board.current_possible_moves
             random_move = random.choice(movable_cells)
-            self.move_stack(random_move)
+            self.make_move(random_move)
 
     def handle_medium_bot(self, bot):
 
@@ -179,7 +192,6 @@ class GameState:
                 best_value = move_value
                 best_move = move
 
-        print("Best Move: " + str(best_move))
         self.select_cell(best_move.get_origin())
         print("Selected Origin: " + str(best_move.get_origin()))
         self.make_move(best_move.get_destination())
@@ -189,8 +201,8 @@ class GameState:
         pass
             
     def handle_bot(self, bot):
-        sleep(0.1)
         if(bot.is_easy_bot()):
+            sleep(0.2)
             self.handle_easy_bot(bot)
         elif(bot.is_medium_bot()):
             self.handle_medium_bot(bot)
