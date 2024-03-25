@@ -1,6 +1,6 @@
 SCREEN_WIDTH =              800
 SCREEN_HEIGHT =             600
-CELL_SIZE =                 50
+CELL_SIZE =                 50 # TODO: This should depend on the screen size and board size
 PIECE_NONE =                0b11
 PIECE_EMPTY =               0b00
 PIECE_ORANGE =              0b01

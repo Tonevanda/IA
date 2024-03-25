@@ -17,6 +17,7 @@ class GameView:
         text_rect = text_surface.get_rect(center=(SCREEN_WIDTH // 2, 20))
         window.blit(text_surface, text_rect.topleft)
 
+    # TODO: This (and every other draw) should draw with the window.size and not with a fixed size
     def draw(self, window):
         window.fill((255, 255, 255))
         self.board_view.draw(window)

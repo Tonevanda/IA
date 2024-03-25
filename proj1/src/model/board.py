@@ -1,6 +1,7 @@
 from config import PIECE_BLUE, PIECE_ORANGE, PIECE_EMPTY, STACK_MASKS, STACK_MAX_SIZES
 import random
 from model.Move import Move
+from model.Player import Player
 import numpy as np
 
 class Board:
@@ -50,11 +51,11 @@ class Board:
         return new_board
 
     # TODO: better way where it takes into account the cuts
-    def get_random_cell(self):
+    def get_random_cell(self) -> tuple:
         return random.choice(self.placeable_cells)
 
-    # TODO: better way taking advantage of bitmap?
-    def get_selectable_cells(self, player):
+    # TODO: This is a bad way to do it, we have inside Player the Cells, but for some reason it isn't working
+    def get_selectable_cells(self, player: 'Player') -> list[tuple]:
         cells = []
         for i in range(self.size):
             for j in range(self.size):
@@ -62,7 +63,8 @@ class Board:
                     cells.append((i, j))
         return cells
 
-    def get_placeable_cells(self):
+    # Returns all the cells that are placeable (aka all of them that are not NONE)
+    def get_placeable_cells(self) -> list[tuple]:
         cells = []
         for i in range(self.size):
             for j in range(self.size):
@@ -71,20 +73,23 @@ class Board:
         return cells
 
     # Checks if the cell is on the edge of the board
-    def is_on_edge(self, row, col):
+    def is_on_edge(self, row: int, col: int) -> bool:
         cut = int(self.size * 0.25)
         return (row == 0 or row < cut-1) or (row == self.size-1 or row > self.size-cut) or (col == 0 or col < (cut-1)) or (col == self.size-1 or col > self.size-cut)
     
-    def make_piece(self, color):
+    # Adds a single piece to the board
+    def make_piece(self, color: int) -> None:
         self.board <<= 2
         self.board |= color
 
-    def make_stack(self, color):
-        for _ in range(self.stack_size - 1):
+    # Adds a stack to the board
+    def make_stack(self, color: int) -> None:
+        for _ in range(self.stack_size - 1): # Add the pieces to the stack given the stack size
             self.make_piece(PIECE_EMPTY)
         self.make_piece(color)
 
-    def make_board(self):
+    # Creates the board with the initial pieces
+    def make_board(self) -> None:
         column_counter = 0
         row_counter = 0
         current_color = PIECE_ORANGE
@@ -92,15 +97,15 @@ class Board:
 
         for row in range(self.size):
             for col in range(self.size):
-                if not self.is_on_edge(row, col):
-                    self.make_stack(current_color)
-                    self.game_state.add_to_player_cells_color((row, col), current_color)
+                if not self.is_on_edge(row, col): # If the cell is not on the edge of the board (where the pieces are placed)
+                    self.make_stack(current_color) # Add a stack to the board
+                    self.game_state.add_to_player_cells_color((row, col), current_color) # Add the cell to the player's cells for better performance
                     column_counter += 1
                     if column_counter % 2 == 0:
                         current_color = PIECE_BLUE if current_color == PIECE_ORANGE else PIECE_ORANGE
                 else:
-                    if(first):
-                        self.board |= PIECE_EMPTY
+                    if(first): # If it's the first time we are adding the pieces to the board
+                        self.board |= PIECE_EMPTY # Add an empty piece to the board
                         for i in range(self.stack_size - 2):
                             self.make_piece(PIECE_EMPTY)
                         first = False
@@ -115,23 +120,25 @@ class Board:
 
         self.make_hexagon()
 
-    
+    # Given a stack position and a new stack, substitutes the stack in the board
+    def substitute_stack(self, stack_position: int, new_stack: int) -> None:
+        self.board &= ~(self.stack_mask << (stack_position * self.stack_size * 2)) # Remove the stack from the board
+        self.board |= (new_stack << (stack_position * self.stack_size * 2)) # Add the new stack to the board
 
-    def substitute_stack(self, stack_position, new_stack):
-        self.board &= ~(self.stack_mask << (stack_position * self.stack_size * 2))
-        self.board |= (new_stack << (stack_position * self.stack_size * 2))
-
-    def get_bitmap_position(self, row, col):
+    # Converts a row and column to a position in the bitmap (it's a bitboard but wtv) 
+    def get_bitmap_position(self, row: int, col: int) -> int:
         return row * self.size + col
 
-    def make_hexagon(self):
+    # Creates the hexagon shape in the board by removing the pieces that are outside the hexagon
+    def make_hexagon(self) -> None:
         for i in range(self.size):
             for j in range(self.size):
                 bitmap_position = self.get_bitmap_position(i, j)
-                if(self.is_outside_board((i,j))):
-                    self.substitute_stack(bitmap_position, self.stack_mask)
+                if(self.is_outside_board((i,j))): # If the cell is outside the hexagon
+                    self.substitute_stack(bitmap_position, self.stack_mask) # Remove the stack from the board by adding a NONE stack (0b11)
 
-    def is_outside_board(self, cell):
+    # Checks if a cell is outside the hexagon
+    def is_outside_board(self, cell: tuple) -> bool:
         cut = int(self.size * 0.25)
         (i,j) = cell
         if i < cut and j < cut - i:
@@ -144,38 +151,42 @@ class Board:
             return True
 
     # Takes a position and returns the stack at that position
-    def get_stack(self, cell):
+    def get_stack(self, cell: tuple) -> int:
         row, col = cell
-        bitmap_pos = self.get_bitmap_position(row, col)
-        return (self.board >> (bitmap_pos * self.stack_size * 2)) & self.stack_mask
+        bitmap_pos = self.get_bitmap_position(row, col) # Get the position in the bitmap
+        return (self.board >> (bitmap_pos * self.stack_size * 2)) & self.stack_mask # Get the stack at the position
 
     # TODO: All this functions could be inside Stack.py to be better organized (but not turning it into an object)
-    def is_none_stack(self, stack):
-        return stack == self.stack_mask
+    def is_none_stack(self, stack: int) -> bool:
+        return stack == self.stack_mask # A none stack is a stack filled with 0b11 aka a stack_mask
     
-    def is_empty_stack(self, stack):
-        return (stack ^ self.stack_mask) == self.stack_mask
+    def is_empty_stack(self, stack: int) -> bool:
+        return (stack ^ self.stack_mask) == self.stack_mask # An empty stack is a stack filled with 0b00
 
-    def get_selected_cell(self):
+    # returns the selected cell
+    def get_selected_cell(self) -> tuple:
         return self.selected_cell
 
-    def get_selected_stack(self):
+    # returns the selected stack
+    def get_selected_stack(self) -> int:
         if self.selected_cell is not None:
             return self.get_stack(self.selected_cell)
         return None
     
-    def get_stack_size(self, stack):
-        return bin(stack).count("1")
+    # Returns the number of pieces in a stack
+    def get_stack_size(self, stack: int) -> int:
+        return bin(stack).count("1") # Since Orange is 01 and Blue is 10, we can count the number of 1s to get the number of pieces
     
-    # Takes a cell and returns a list of possible moves in the corresponding cell
-    def get_possible_moves(self, cell):
+    # Takes a cell and returns a list of possible moves from the corresponding cell
+    # TODO: Check if removing the firsts ifs doesn't break the code
+    def get_possible_moves(self, cell: tuple) -> list[tuple]:
         x,y = cell
         stack = self.get_stack(cell)
-        max_move = self.get_stack_size(stack)
+        max_move = self.get_stack_size(stack) # The maximum number of moves is the number of pieces in the stack
 
         if max_move > 0:
             moves = []
-            for distance in range(1, max_move + 1):
+            for distance in range(1, max_move + 1): # The distance can be from 1 to the number of pieces in the stack
                 if 0 <= x - distance < self.size:
                     if(not self.is_outside_board((x - distance, y))):
                         moves.append((x - distance, y))
@@ -191,63 +202,66 @@ class Board:
             return moves
         return None
 
-    def remove_from_stack(self, stack, num_pieces):
-        stack_pieces = self.get_stack_size(stack)-1
-        for i in range(num_pieces):
-            stack &= ~(0b11 << ((stack_pieces-i) * 2))
-        return stack & self.stack_mask
 
-    def get_removed_from_stack(self, stack, num_pieces):
-        removed = 0b0
-        stack_pieces = self.get_stack_size(stack)-1
+    def remove_from_stack(self, stack: int, num_pieces: int) -> int:
+        stack_pieces = self.get_stack_size(stack)-1 # The number of pieces in the stack
+
         for i in range(num_pieces):
-            piece_removed = (stack & (0b11 << ((stack_pieces-i)*2))) >> ((stack_pieces-i)*2)
-            removed <<= 2
-            removed |= piece_removed
-            stack &= ~(0b11 << ((stack_pieces-i)*2)) 
-        return removed
-        
-    def add_pieces_to_stack(self, stack, removed_stack):
-        shift = self.get_stack_size(stack) * 2
-        removed_stack <<= shift
-        stack |= removed_stack
-        return stack
+            stack &= ~(0b11 << ((stack_pieces-i) * 2)) # Remove n bottom pieces from the stack
+        return stack & self.stack_mask # Return the new stack with the proper size
+
+    # Returns the pieces removed from the stack
+    def get_removed_from_stack(self, stack: int, num_pieces: int) -> int:
+        removed = 0b0 # The removed pieces
+        stack_pieces = self.get_stack_size(stack)-1 # The number of pieces in the stack
+        for i in range(num_pieces): # For each piece removed
+            piece_removed = (stack & (0b11 << ((stack_pieces-i)*2))) >> ((stack_pieces-i)*2) # Get the piece removed
+            removed <<= 2 # Shift the removed pieces to the left
+            removed |= piece_removed # Add the piece removed to the removed pieces
+            stack &= ~(0b11 << ((stack_pieces-i)*2))  # Remove the piece from the stack
+        return removed # Return the removed pieces
     
-    def get_distance_between_cells(self, source, destination):
+    # Adds new pieces to a given stack
+    def add_pieces_to_stack(self, stack: int, removed_stack: int) -> int:
+        shift = self.get_stack_size(stack) * 2 # Get where to add the new pieces
+        removed_stack <<= shift # Shift the removed pieces (new pieces) to the right position
+        stack |= removed_stack # Add the removed pieces (new pieces) to the stack
+        return stack
+
+    # Returns the Manhattan distance between two cells
+    def get_distance_between_cells(self, source: tuple, destination: tuple) -> int:
         return abs(destination[0] - source[0]) + abs(destination[1] - source[1])
 
-    def handle_removed_pieces(self, removed_pieces):
-        amount = self.get_stack_size(removed_pieces)
+    # Handles the pieces removed from a stack
+    # TODO: Join this with handle_stack_size_limit if we can
+    def handle_removed_pieces(self, removed_pieces: int) -> None:
+        amount = self.get_stack_size(removed_pieces) # The number of pieces removed
         for i in range(amount):
-            piece = removed_pieces & (0b11 << (i*2))
-            if piece == self.game_state.get_current_player().get_color_bits():
-                self.game_state.add_to_player_stack()
+            piece = removed_pieces & (0b11 << (i*2)) # Get the piece removed
+            if piece == self.game_state.get_current_player().get_color_bits(): # If the piece removed is from the current player
+                self.game_state.add_to_player_stack() # Add the piece to the current player's stack
 
-    def handle_stack_size_limit(self, stack, bitmap_position) -> None:
-        if(self.get_stack_size(stack) > self.stack_size):
-            overflow = self.get_stack_size(stack) - self.stack_size
-            rest = stack & ~(self.stack_mask << overflow*2)
-            stack = (stack & (self.stack_mask << overflow*2)) >> (overflow*2)
-            self.handle_removed_pieces(rest)
-        print("Substituting stack to: ", bin(stack))
-        self.substitute_stack(bitmap_position, stack)
+    # Handles the stack size limit by removing the pieces that exceed the limit
+    def handle_stack_size_limit(self, stack: int, bitmap_position: int) -> None:
+        if(self.get_stack_size(stack) > self.stack_size): # If the stack exceeds the limit
+            overflow = self.get_stack_size(stack) - self.stack_size # Get the number of pieces that exceed the limit
+            rest = stack & ~(self.stack_mask << overflow*2) # Get the pieces that don't exceed the limit
+            stack = (stack & (self.stack_mask << overflow*2)) >> (overflow*2) # Get the pieces that exceed the limit
+            self.handle_removed_pieces(rest) # Calls the function that will handle the pieces that exceed the limit by adding to the player stack or deleting them
+        self.substitute_stack(bitmap_position, stack) # Update the stack in the board
         
-
+    # Transfers the pieces from a stack to another
     def transfer_pieces(self, source: tuple, destination: tuple) -> None:
-        source_pos = self.get_bitmap_position(source[0], source[1])
-        destination_pos = self.get_bitmap_position(destination[0], destination[1])
-        distance = self.get_distance_between_cells(source, destination)
-        print("Source pos: ", source_pos, " Destination pos: ", destination_pos, " Distance: ", distance)
+        source_pos = self.get_bitmap_position(source[0], source[1]) # Get the position of the source stack in the bitmap
+        destination_pos = self.get_bitmap_position(destination[0], destination[1]) # Get the position of the destination stack in the bitmap
+        distance = self.get_distance_between_cells(source, destination) # Calculates the distance between the source and destination
 
-        source_stack = self.get_stack(source)
-        destination_stack = self.get_stack(destination)
-        print("Source stack: ", bin(source_stack), " Destination stack: ", bin(destination_stack))
+        source_stack = self.get_stack(source) # Get the source stack (before the move)
+        destination_stack = self.get_stack(destination) # Get the destination stack (before the move)
 
-        new_source_stack = self.remove_from_stack(source_stack, distance)
-        removed_stack = self.get_removed_from_stack(source_stack, distance)
-        new_destination_stack = self.add_pieces_to_stack(destination_stack, removed_stack)
-        print("New source stack: ", bin(new_source_stack), " New destination stack: ", bin(new_destination_stack))
-        print("Removed stack: ", bin(removed_stack))
+        new_source_stack = self.remove_from_stack(source_stack, distance) # Remove the pieces from the source stack
+        removed_stack = self.get_removed_from_stack(source_stack, distance) # Get the pieces removed from the source stack
+        new_destination_stack = self.add_pieces_to_stack(destination_stack, removed_stack) # Add the pieces removed from the source stack to the destination stack
 
         # Add the destination of the moving stack to the current player's cells
         self.game_state.add_to_player_cells(destination, self.game_state.get_current_player())
@@ -256,9 +270,7 @@ class Board:
         if(self.is_player_stack(destination, self.game_state.get_next_player())):
             self.game_state.remove_from_player_cells(destination, self.game_state.get_next_player())
 
-        # Replace the source stack with the new source stack
-        self.substitute_stack(source_pos, new_source_stack)
-        print("Substituted source stack")
+        self.substitute_stack(source_pos, new_source_stack) # Replace the source stack with the new source stack
 
         # if the source stack now belongs to the opponent, add it to the opponent's cells and remove it from the current player's cells
         if(self.is_player_stack(source, self.game_state.get_next_player())):
@@ -267,14 +279,14 @@ class Board:
         elif(self.is_empty_stack(new_source_stack)): # if the source stack is now empty, remove it from the current player's cells
             self.game_state.remove_from_player_cells(source, self.game_state.get_current_player())
 
-        self.handle_stack_size_limit(new_destination_stack, destination_pos)
-        print("Substituted destination stack")
+        self.handle_stack_size_limit(new_destination_stack, destination_pos) # Call the function that will handle the stack size limit and the change of the destination stack in the board
 
-    def place_saved_piece(self, cell, player):
-        destination_pos = self.get_bitmap_position(cell[0], cell[1])
+    # Places a saved piece in the board
+    def place_saved_piece(self, cell: tuple, player: 'Player') -> None:
+        destination_pos = self.get_bitmap_position(cell[0], cell[1]) # Get the position of the destination stack in the bitmap
 
-        destination_stack = self.get_stack(cell)
-        new_destination_stack = self.add_pieces_to_stack(destination_stack, player.get_color_bits())
+        destination_stack = self.get_stack(cell) # Get the destination stack (before the move)
+        new_destination_stack = self.add_pieces_to_stack(destination_stack, player.get_color_bits()) # Add the piece to the destination stack
         
         # Add the destination of the moving stack to the current player's cells
         self.game_state.add_to_player_cells(cell, self.game_state.get_current_player())
@@ -282,9 +294,10 @@ class Board:
         if(self.is_player_stack(cell, self.game_state.get_next_player())):
             self.game_state.remove_from_player_cells(cell, self.game_state.get_next_player())
 
-        self.handle_stack_size_limit(new_destination_stack, destination_pos)
+        self.handle_stack_size_limit(new_destination_stack, destination_pos) # Call the function that will handle the stack size limit and the change of the destination stack in the board
 
-    def make_move(self, pos, current_player):
+    # Makes a move in the board
+    def make_move(self, pos: tuple, current_player: 'Player') -> None:
         selected_stack = self.get_stack(self.selected_cell)
         #if the move is valid, the pieces are moved and the turn changes
         #the move is valid if the stack at the current position is not empty, the top piece is the current player's color, and the destination is in the list of possible moves
@@ -292,14 +305,14 @@ class Board:
             self.transfer_pieces(self.selected_cell, pos)
 
     # Given a cell, returns if it belongs to a given player
-    def is_player_stack(self, cell, player):
-        stack = self.get_stack(cell)
-        color = player.get_color_bits()
-        num_pieces = self.get_stack_size(stack)
-        if num_pieces == 0:
+    def is_player_stack(self, cell: tuple, player: 'Player') -> bool:
+        stack = self.get_stack(cell) # Get the stack at the cell
+        num_pieces = self.get_stack_size(stack) # Get the number of pieces in the stack
+        if num_pieces == 0: # If the stack is empty, it doesn't belong to the player
             return False
-        stack >>= (num_pieces-1)*2
-        return (stack&0b11) == color
+        color = player.get_color_bits() # Get the color bits of the player
+        stack >>= (num_pieces-1)*2 # Get the top piece of the stack
+        return (stack&0b11) == color # Return if the top piece of the stack is the player's color
     
     # TODO: Isto é muito mau, devíamos dar refactor geral para qualquer move ser da classe Move
     def get_valid_moves(self, player) -> np.ndarray:
