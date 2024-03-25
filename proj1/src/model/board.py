@@ -8,6 +8,7 @@ class Board:
         self.size = size
         self.board = 0b0
         self.make_board()
+        self.placeable_cells = self.get_placeable_cells()
         
         self.selected_cell = None
 
@@ -26,16 +27,29 @@ class Board:
     def get_total_cells(self):
         return self.size * self.size
     
+    def copy(self):
+        new_board = Board(self.game_state, self.size)
+        new_board.update_board(self.board)
+        return new_board
+
     # TODO: better way where it takes into account the cuts
     def get_random_cell(self):
         return (random.randint(0, self.size-1), random.randint(0, self.size-1))
-    
+
     # TODO: better way taking advantage of bitmap?
     def get_selectable_cells(self, player):
         cells = []
         for i in range(self.size):
             for j in range(self.size):
                 if self.is_player_stack((i, j), player):
+                    cells.append((i, j))
+        return cells
+
+    def get_placeable_cells(self):
+        cells = []
+        for i in range(self.size):
+            for j in range(self.size):
+                if not self.is_none_stack(self.get_stack((i, j))):
                     cells.append((i, j))
         return cells
 
@@ -267,6 +281,7 @@ class Board:
                 valid_moves.extend([Move(cell, move) for move in moves])
 
         # Represents moves with saved pieces
-        valid_moves.extend([Move((None, None), cell, True) for cell in movable_cells])
+        if player.has_saved_pieces():
+            valid_moves.extend([Move((None, None), cell, True) for cell in self.placeable_cells])
         return valid_moves
             

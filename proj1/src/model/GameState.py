@@ -19,6 +19,12 @@ class GameState:
 
         self.turn = 1
 
+    def copy(self):
+        new_state = GameState(self.state, self.board.size, self.orange, self.blue)
+        new_state.turn = self.turn
+        new_state.board = self.board.copy()
+        return new_state
+
     def get_starting_cell(self):
         board_width = self.board.size * CELL_SIZE
         board_height = self.board.size * CELL_SIZE
@@ -124,12 +130,7 @@ class GameState:
             self.board.make_move(cell, self.get_current_player())
             if(not self.did_win()):
                 self.next_turn()
-                print("Cells: " + str(self.get_current_player().get_cells()))
         self.unselect_cell()
-    
-    # Function used specifically for the AI to calculate the tree
-    def make_move(self, cell, board):
-        return None
 
     def make_move(self, cell):
         player = self.get_current_player()
@@ -154,15 +155,38 @@ class GameState:
             self.move_stack(random_move)
 
     def handle_medium_bot(self, bot):
-        print("VALID MOVES")
-        print(self.board.get_valid_moves(bot))
-        #board = copy.deepcopy(self.board)
+
+        best_value = float('-inf')
+        best_move = None
+        player = self.get_current_player() 
+        opponent = self.get_next_player()
+        for move in self.board.get_valid_moves(bot):
+            new_state = self.copy()
+            initial_position = move.get_origin()
+            destination = move.get_destination()
+
+            if(move.is_from_personal_stack()):
+                new_state.handle_saved_player_stack_selection(new_state.get_current_player())
+                new_state.place_saved_piece(destination, new_state.get_current_player())
+            else:
+                new_state.select_cell(initial_position)
+                new_state.make_move(destination)
+
+            print("Move: " + str(move))
+            move_value = self.minimax(new_state, 2, float('-inf'), float('inf'), False, player, opponent)
+
+            if move_value > best_value:
+                best_value = move_value
+                best_move = move
+
+        self.select_cell(best_move.get_origin())
+        self.make_move(best_move.get_destination())
 
     def handle_hard_bot(self, bot):
         pass
             
     def handle_bot(self, bot):
-        sleep(0.2)
+        sleep(0.1)
         if(bot.is_easy_bot()):
             self.handle_easy_bot(bot)
         elif(bot.is_medium_bot()):
@@ -183,3 +207,54 @@ class GameState:
 
     def to_quit(self):
         self.state.to_quit()
+
+    def eval(self, player, opponent) -> int:
+        # Pieces in the personal stack are more valuable than pieces on the board
+        return ((player.get_stack_count() - opponent.get_stack_count()) * 10 + len(self.board.get_selectable_cells(player)) - len(self.board.get_selectable_cells(opponent)))
+    
+    def minimax(self, state, depth, alpha, beta, maximizingPlayer, player, opponent):
+        if depth == 0 or state.verify_win():
+            return state.eval(player, opponent)
+        
+        if maximizingPlayer:
+            maxEval = float('-inf')
+            for move in state.board.get_valid_moves(state.get_current_player()):
+
+                new_state = state.copy()
+                initial_position = move.get_origin()
+                destination = move.get_destination()
+
+                if(move.is_from_personal_stack()):
+                    new_state.handle_saved_player_stack_selection(new_state.get_current_player())
+                    new_state.place_saved_piece(destination, new_state.get_current_player())
+                else:
+                    new_state.select_cell(initial_position)
+                    new_state.make_move(destination)
+
+                eval = new_state.minimax(new_state, depth-1, alpha, beta, False, player, opponent)
+                maxEval = max(maxEval, eval)
+                alpha = max(alpha, eval)
+                if beta <= alpha:
+                    break
+            return maxEval
+        else:
+            minEval = float('inf')
+            for move in state.board.get_valid_moves(state.get_current_player()):
+
+                new_state = state.copy()
+                initial_position = move.get_origin()
+                destination = move.get_destination()
+
+                if(move.is_from_personal_stack()):
+                    new_state.handle_saved_player_stack_selection(new_state.get_current_player())
+                    new_state.place_saved_piece(destination, new_state.get_current_player())
+                else:
+                    new_state.select_cell(initial_position)
+                    new_state.make_move(destination)
+
+                eval = new_state.minimax(new_state, depth-1, alpha, beta, True, player, opponent)
+                minEval = min(minEval, eval)
+                beta = min(beta, eval)
+                if beta <= alpha:
+                    break
+            return minEval
