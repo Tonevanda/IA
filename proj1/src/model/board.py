@@ -1,5 +1,6 @@
 from config import PIECE_BLUE, PIECE_ORANGE, PIECE_EMPTY, PIECE_NONE, STACK_MASK
 import random
+from model.Move import Move
 
 class Board:
     def __init__(self, game_state, size):
@@ -254,3 +255,18 @@ class Board:
                 if self.is_player_stack((i, j), player):
                     return False
         return True
+    
+    # TODO: Isto é muito mau, devíamos dar refactor geral para qualquer move ser da classe Move
+    def get_valid_moves(self, player):
+        valid_moves = []
+        movable_cells = self.get_selectable_cells(player)
+        # Represents moves with board piece
+        for cell in movable_cells:
+            moves = self.get_possible_moves(cell)
+            if moves is not None:
+                valid_moves.extend([Move(cell, move) for move in moves])
+
+        # Represents moves with saved pieces
+        valid_moves.extend([Move((None, None), cell, True) for cell in movable_cells])
+        return valid_moves
+            

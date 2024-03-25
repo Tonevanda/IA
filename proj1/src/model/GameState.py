@@ -3,6 +3,7 @@ from controller.GameController import GameController
 from view.GameView import GameView
 from config import CELL_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, PIECE_ORANGE
 import random
+import copy
 from time import sleep
 
 class GameState:
@@ -125,7 +126,7 @@ class GameState:
                 self.next_turn()
                 print("Cells: " + str(self.get_current_player().get_cells()))
         self.unselect_cell()
-
+    
     # Function used specifically for the AI to calculate the tree
     def make_move(self, cell, board):
         return None
@@ -153,12 +154,13 @@ class GameState:
             self.move_stack(random_move)
 
     def handle_medium_bot(self, bot):
-        pass
+        print("VALID MOVES")
+        print(self.board.get_valid_moves(bot))
+        #board = copy.deepcopy(self.board)
 
     def handle_hard_bot(self, bot):
         pass
             
-    
     def handle_bot(self, bot):
         sleep(0.2)
         if(bot.is_easy_bot()):
