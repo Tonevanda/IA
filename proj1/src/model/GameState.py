@@ -13,6 +13,8 @@ class GameState:
         self.blue = blue        # Player 2
         self.board = Board(self, size)
         self.gameController = GameController(self)
+        # TODO: Need to refactor so after every move this value is updated
+        self.last_move = None
 
         starting_cell = self.get_starting_cell()
         self.gameView = GameView(self, self.board, starting_cell, self.orange, self.blue)
@@ -27,6 +29,9 @@ class GameState:
         new_state.orange = copy.deepcopy(self.orange)
         new_state.blue = copy.deepcopy(self.blue)
         return new_state
+
+    def get_last_move(self):
+        return self.last_move
 
     def get_starting_cell(self):
         board_width = self.board.size * CELL_SIZE
@@ -69,7 +74,7 @@ class GameState:
         print(str(self.get_next_player()), " cells:")
         print(self.get_next_player().get_cells())
         return (self.get_next_player().get_stack_count() == 0 and len(self.get_next_player().get_cells()) == 0)
-    
+
     def add_to_player_stack(self):
         current_player = self.get_current_player()
         current_player.add_stack_piece()
@@ -279,7 +284,7 @@ class GameState:
                     break
             return minEval
         
-    def negamax(self, state, depth, alpha, beta, color):
+    def negamax(self, state: 'GameState', depth: int, alpha: int, beta: int, color: int) -> int:
         if depth == 0 or state.verify_win():
             return color * state.eval(state.get_current_player(), state.get_next_player())
         
@@ -303,3 +308,4 @@ class GameState:
                 break
         
         return maxEval
+    
