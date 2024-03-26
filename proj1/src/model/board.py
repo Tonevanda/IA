@@ -11,8 +11,9 @@ class Board:
         self.stack_size = STACK_MAX_SIZES[size]
         self.stack_mask = STACK_MASKS[size]
         self.board = 0b0
+        self.placeable_cells = []
         self.make_board()
-        self.placeable_cells = self.get_placeable_cells()
+        
         
         self.selected_cell = None
 
@@ -40,50 +41,13 @@ class Board:
         new_board.board = self.board  # Copy board state
         new_board.placeable_cells = list(self.placeable_cells)  # Create a new list from placeable_cells
         new_board.selected_cell = self.selected_cell  # Copy selected_cell
+        new_board.placeable_cells = list(self.placeable_cells) if self.placeable_cells else None  # Create a new list from placeable_cells
         new_board.current_possible_moves = list(self.current_possible_moves) if self.current_possible_moves else None  # Create a new list from current_possible_moves
         return new_board
 
     # TODO: better way where it takes into account the cuts
     def get_random_cell(self) -> tuple:
         return random.choice(self.placeable_cells)
-
-    # TODO: This is a bad way to do it, we have inside Player the Cells, but for some reason it isn't working
-    def get_selectable_cells(self, player: 'Player') -> list[tuple]:
-        cells = []
-        for i in range(self.size):
-            for j in range(self.size):
-                if self.is_player_stack((i, j), player):
-                    cells.append((i, j))
-        return cells
-    
-    def get_bitboard_selectable_cells(self, player: 'Player') -> list[tuple]:
-        cells = []
-        for i in range(self.size*self.size):
-            stack = self.get_bitboard_stack(i)
-            if self.is_player_stack_bitboard(stack, player):
-                cells.append((i//self.size, i%self.size))
-        return cells
-
-    # Returns the stack at a given position in the bitboard (bitmap)
-    def get_bitboard_stack(self, bitboard_pos: int) -> int:
-        return (self.board >> (bitboard_pos * self.stack_size * 2)) & self.stack_mask
-
-    def is_player_stack_bitboard(self, stack: int, player: 'Player') -> bool:
-        num_pieces = self.get_stack_size(stack) # Get the number of pieces in the stack
-        if num_pieces == 0: # If the stack is empty, it doesn't belong to the player
-            return False
-        color = player.get_color_bits() # Get the color bits of the player
-        stack >>= (num_pieces-1)*2 # Get the top piece of the stack
-        return (stack&0b11) == color # Return if the top piece of the stack is the player's color
-
-    # Returns all the cells that are placeable (aka all of them that are not NONE)
-    def get_placeable_cells(self) -> list[tuple]:
-        cells = []
-        for i in range(self.size):
-            for j in range(self.size):
-                if not self.is_none_stack(self.get_stack((i, j))):
-                    cells.append((i, j))
-        return cells
 
     # Checks if the cell is on the edge of the board
     def is_on_edge(self, row: int, col: int) -> bool:
@@ -124,7 +88,7 @@ class Board:
                         first = False
                     else:
                         self.make_stack(PIECE_EMPTY)
-
+                self.placeable_cells.append((row, col))
             row_counter += 1
             if row_counter % 2 == 0:
                 current_color = PIECE_BLUE
@@ -149,6 +113,7 @@ class Board:
                 bitmap_position = self.get_bitmap_position(i, j)
                 if(self.is_outside_board((i,j))): # If the cell is outside the hexagon
                     self.substitute_stack(bitmap_position, self.stack_mask) # Remove the stack from the board by adding a NONE stack (0b11)
+                    self.placeable_cells.remove((i,j)) # Remove the cell from the placeable cells
 
     # Checks if a cell is outside the hexagon
     def is_outside_board(self, cell: tuple) -> bool:
@@ -340,7 +305,7 @@ class Board:
 
         # Represents moves with saved pieces
         if player.has_saved_pieces():
-            valid_moves.extend([Move((None, None), valid_cell, True) for cell in self.placeable_cells])
+            valid_moves.extend([Move((None, None), cell, True) for cell in self.placeable_cells])
 
         return np.array(valid_moves)
             

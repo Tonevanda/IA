@@ -189,9 +189,9 @@ class GameState:
             player = new_state.get_current_player() 
             opponent = new_state.get_next_player()
 
-            #move_value = self.minimax(new_state, 1, float('-inf'), float('inf'), False, player, opponent)
+            move_value = self.minimax(new_state, 4, float('-inf'), float('inf'), False, player, opponent)
             # Call to Negamax
-            move_value = self.negamax(new_state, 2, float('-inf'), float('inf'), 1)
+            #move_value = self.negamax(new_state, 2, float('-inf'), float('inf'), 1)
             print("Move: " + str(move.get_origin()) + " to " + str(move.get_destination()) + " Value: " + str(move_value))
 
             if move_value > best_value:
@@ -240,8 +240,8 @@ class GameState:
 
     def eval(self) -> int:
         # Pieces in the personal stack are more valuable than pieces on the board
-        current_player = self.get_current_player()
-        next_player = self.get_next_player()
+        current_player = self.blue
+        next_player = self.orange
         return (current_player.get_stack_count() - next_player.get_stack_count()) * 10 + len(current_player.get_cells()) - len(next_player.get_cells())
     
     def minimax(self, state, depth, alpha, beta, maximizingPlayer, player, opponent):
