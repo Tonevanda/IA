@@ -30,15 +30,16 @@ class GameController:
                 if (self.game_state.no_cell_selected()):
                     self.game_state.select_cell(cell)
                 else:
-                    self.game_state.make_move(cell)
+                    return self.game_state.make_move(cell)
             else:
                 self.game_state.unselect_cell()
-                
+        return False       
 
     def handle_event(self, player):
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 cell = self.game_state.get_pos(event.pos)
-                self.handle_click(cell, player)
+                return self.handle_click(cell, player)
             if event.type == pygame.QUIT:
                 self.game_state.to_quit()
+        return False

@@ -23,11 +23,11 @@ class GameState:
 
     def copy(self):
         new_state = GameState.__new__(GameState)
-        new_state.state = self.state
+        new_state.state = self.state 
         new_state.turn = self.turn
-        new_state.board = self.board.copy(new_state)
         new_state.orange = copy.deepcopy(self.orange)
         new_state.blue = copy.deepcopy(self.blue)
+        new_state.board = self.board.copy(new_state)
         return new_state
 
     def get_last_move(self):
@@ -132,22 +132,23 @@ class GameState:
             self.board.place_saved_piece(cell, player)
             self.remove_from_player_stack()
             self.unselect_saved_player_stack(player)
-            if(not self.did_win()):
-                self.next_turn()
+            return True
+        return False
 
     def move_stack(self, cell):
+        made_move = False
         if cell in self.board.current_possible_moves:
             self.board.make_move(cell, self.get_current_player())
-            if(not self.did_win()):
-                self.next_turn()
+            made_move = True
         self.unselect_cell()
+        return made_move
 
     def make_move(self, cell):
         player = self.get_current_player()
         if(player.stack_selected):
-            self.place_saved_piece(cell, player)
+            return self.place_saved_piece(cell, player)
         else:
-            self.move_stack(cell)
+            return self.move_stack(cell)
 
     def is_bot_playing(self):
         return self.get_current_player().is_bot()
@@ -172,13 +173,12 @@ class GameState:
 
         best_value = float('-inf')
         best_move = None
-        player = self.get_current_player() 
-        opponent = self.get_next_player()
+        
         for move in self.board.get_valid_moves(bot):
             new_state = self.copy()
             initial_position = move.get_origin()
             destination = move.get_destination()
-
+            
             if(move.is_from_personal_stack()):
                 new_state.handle_saved_player_stack_selection(new_state.get_current_player())
                 new_state.place_saved_piece(destination, new_state.get_current_player())
@@ -186,7 +186,11 @@ class GameState:
                 new_state.select_cell(initial_position)
                 new_state.make_move(destination)
 
+            player = new_state.get_current_player() 
+            opponent = new_state.get_next_player()
+
             move_value = self.minimax(new_state, 0, float('-inf'), float('inf'), False, player, opponent)
+            print("Move: " + str(move.get_origin()) + " to " + str(move.get_destination()) + " Value: " + str(move_value))
             # Call to Negamax
             # move_value = self.negamax(new_state, 0, float('-inf'), float('inf'), 1)
 
@@ -194,8 +198,6 @@ class GameState:
                 best_value = move_value
                 best_move = move
 
-        print("Orange cells: ", self.orange.get_cells())
-        print("Blue Cells: ", self.blue.get_cells())
         self.select_cell(best_move.get_origin())
         self.make_move(best_move.get_destination())
 
@@ -206,17 +208,27 @@ class GameState:
         if(bot.is_easy_bot()):
             sleep(0.2)
             self.handle_easy_bot(bot)
+            return True
         elif(bot.is_medium_bot()):
             self.handle_medium_bot(bot)
+            return True
         elif(bot.is_hard_bot()):
             self.handle_hard_bot(bot)
+            return True
+        return False
 
     def handle_player(self):
         player = self.get_current_player()
+        has_played = False
         if player.is_bot():
-            self.handle_bot(player)
+            has_played = self.handle_bot(player)
         else:
-            self.gameController.handle_event(player)
+            has_played = self.gameController.handle_event(player)
+
+        if(has_played):
+            if(not self.did_win()):
+                self.next_turn()
+            has_played = False
 
     def run(self, window):
         self.handle_player()
