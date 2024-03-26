@@ -333,13 +333,14 @@ class Board:
         movable_cells = player.get_cells()
         # Represents moves with board piece
         for cell in movable_cells:
-            moves = self.get_possible_moves(tuple(cell))  # Convert cell to a tuple
+            valid_cell = tuple(int(num) for num in cell) # Convert nparray[npint32 npint32] to tuple(int, int)
+            moves = self.get_possible_moves(valid_cell) 
             if moves is not None:
-                valid_moves.extend([Move(tuple(cell), move) for move in moves])
+                valid_moves.extend([Move(valid_cell, move) for move in moves])
 
         # Represents moves with saved pieces
         if player.has_saved_pieces():
-            valid_moves.extend([Move((None, None), tuple(cell), True) for cell in self.placeable_cells])
+            valid_moves.extend([Move((None, None), valid_cell, True) for cell in self.placeable_cells])
 
         return np.array(valid_moves)
             

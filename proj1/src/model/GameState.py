@@ -161,19 +161,16 @@ class GameState:
             selectable_cells_board = self.board.get_selectable_cells(bot)
             selectable_cells_bitboard = self.board.get_bitboard_selectable_cells(bot)
 
-            print ("Selectable Cells Bitboard: " + str(selectable_cells_bitboard))
+            random_select = random.choice(selectable_cells)
+            cell = tuple(int(num) for num in random_select)
 
-            random_select = tuple(random.choice(selectable_cells))
-            random_board = random.choice(selectable_cells_board)
-            random_bitboard = random.choice(selectable_cells_bitboard)
+            self.select_cell(cell)
 
-            #self.select_cell(random_select)
-            #self.select_cell(random_board)
-            self.select_cell(random_bitboard)
             movable_cells = self.board.current_possible_moves
+            print("Movable cells: " + str(movable_cells))
             random_move = random.choice(movable_cells)
             self.move_stack(random_move)
-            print("Moved from: " + str(random_select) + " to " + str(random_move))
+            print("Moved from: " + str(cell) + " to " + str(random_move))
 
     def handle_medium_bot(self, bot):
 
