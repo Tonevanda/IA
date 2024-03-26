@@ -190,6 +190,8 @@ class GameState:
 
             #print("Move: " + str(move))
             move_value = self.minimax(new_state, 0, float('-inf'), float('inf'), False, player, opponent)
+            # Call to Negamax
+            # move_value = self.negamax(new_state, 0, float('-inf'), float('inf'), 1)
 
             if move_value > best_value:
                 best_value = move_value
@@ -276,3 +278,28 @@ class GameState:
                 if beta <= alpha:
                     break
             return minEval
+        
+    def negamax(self, state, depth, alpha, beta, color):
+        if depth == 0 or state.verify_win():
+            return color * state.eval(state.get_current_player(), state.get_next_player())
+        
+        maxEval = float('-inf')
+        for move in state.board.get_valid_moves(state.get_current_player()):
+            new_state = state.copy()
+            initial_position = move.get_origin()
+            destination = move.get_destination()
+
+            if(move.is_from_personal_stack()):
+                new_state.handle_saved_player_stack_selection(new_state.get_current_player())
+                new_state.place_saved_piece(destination, new_state.get_current_player())
+            else:
+                new_state.select_cell(initial_position)
+                new_state.make_move(destination)
+
+            eval = -new_state.negamax(new_state, depth-1, -beta, -alpha, -color)
+            maxEval = max(maxEval, eval)
+            alpha = max(alpha, eval)
+            if beta <= alpha:
+                break
+        
+        return maxEval
