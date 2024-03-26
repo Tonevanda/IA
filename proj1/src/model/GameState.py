@@ -189,10 +189,10 @@ class GameState:
             player = new_state.get_current_player() 
             opponent = new_state.get_next_player()
 
-            move_value = self.minimax(new_state, 0, float('-inf'), float('inf'), False, player, opponent)
-            print("Move: " + str(move.get_origin()) + " to " + str(move.get_destination()) + " Value: " + str(move_value))
+            #move_value = self.minimax(new_state, 1, float('-inf'), float('inf'), False, player, opponent)
             # Call to Negamax
-            # move_value = self.negamax(new_state, 0, float('-inf'), float('inf'), 1)
+            move_value = self.negamax(new_state, 2, float('-inf'), float('inf'), 1)
+            print("Move: " + str(move.get_origin()) + " to " + str(move.get_destination()) + " Value: " + str(move_value))
 
             if move_value > best_value:
                 best_value = move_value
@@ -200,6 +200,7 @@ class GameState:
 
         self.select_cell(best_move.get_origin())
         self.make_move(best_move.get_destination())
+        print("Best Move: " + str(best_move.get_origin()) + " to " + str(best_move.get_destination()) + " Value: " + str(best_value))
 
     def handle_hard_bot(self, bot):
         pass
@@ -237,13 +238,15 @@ class GameState:
     def to_quit(self):
         self.state.to_quit()
 
-    def eval(self, player, opponent) -> int:
+    def eval(self) -> int:
         # Pieces in the personal stack are more valuable than pieces on the board
-        return (player.get_stack_count() - opponent.get_stack_count()) * 10 + len(player.get_cells()) - len(opponent.get_cells())
+        current_player = self.get_current_player()
+        next_player = self.get_next_player()
+        return (current_player.get_stack_count() - next_player.get_stack_count()) * 10 + len(current_player.get_cells()) - len(next_player.get_cells())
     
     def minimax(self, state, depth, alpha, beta, maximizingPlayer, player, opponent):
         if depth == 0 or state.verify_win():
-            return state.eval(player, opponent)
+            return state.eval()
         
         if maximizingPlayer:
             maxEval = float('-inf')
@@ -290,7 +293,7 @@ class GameState:
         
     def negamax(self, state: 'GameState', depth: int, alpha: int, beta: int, color: int) -> int:
         if depth == 0 or state.verify_win():
-            return color * state.eval(state.get_current_player(), state.get_next_player())
+            return color * state.eval()
         
         maxEval = float('-inf')
         for move in state.board.get_valid_moves(state.get_current_player()):
