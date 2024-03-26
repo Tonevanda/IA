@@ -189,10 +189,10 @@ class GameState:
             player = new_state.get_current_player() 
             opponent = new_state.get_next_player()
 
-            move_value = self.minimax(new_state, 4, float('-inf'), float('inf'), False, player, opponent)
+            move_value = self.minimax(new_state, 2, float('-inf'), float('inf'), False, player, opponent)
             # Call to Negamax
             #move_value = self.negamax(new_state, 2, float('-inf'), float('inf'), 1)
-            print("Move: " + str(move.get_origin()) + " to " + str(move.get_destination()) + " Value: " + str(move_value))
+            #print("Move: " + str(move.get_origin()) + " to " + str(move.get_destination()) + " Value: " + str(move_value))
 
             if move_value > best_value:
                 best_value = move_value
@@ -200,14 +200,14 @@ class GameState:
 
         self.select_cell(best_move.get_origin())
         self.make_move(best_move.get_destination())
-        print("Best Move: " + str(best_move.get_origin()) + " to " + str(best_move.get_destination()) + " Value: " + str(best_value))
+        #print("Best Move: " + str(best_move.get_origin()) + " to " + str(best_move.get_destination()) + " Value: " + str(best_value))
 
     def handle_hard_bot(self, bot):
         pass
             
     def handle_bot(self, bot):
         if(bot.is_easy_bot()):
-            sleep(0.2)
+            #sleep(0.2)
             self.handle_easy_bot(bot)
             return True
         elif(bot.is_medium_bot()):
