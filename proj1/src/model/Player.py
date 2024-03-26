@@ -20,13 +20,9 @@ class Player:
     
     # Add a cell to the player's cells
     def add_cell(self, cell: tuple) -> None:
-        print("Received cell: ", cell)
         cell = np.array(cell)  # Convert cell to a numpy array (i.e. (1,2) -> [1 2])
-        print("Converted cell: ", cell)
         if not any(np.array_equal(cell, existing_cell) for existing_cell in self.cells): # If the cell is not already in the player's cells
             self.cells = np.append(self.cells, [cell], axis=0) # Add the cell to the player's cells
-            print("Added cell: ", cell)
-        print("")
 
     def remove_cell(self, cell: tuple) -> None:
         cell = np.array(cell) # Convert cell to a numpy array (i.e. (1,2) -> [1 2])
