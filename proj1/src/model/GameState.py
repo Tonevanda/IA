@@ -25,7 +25,7 @@ class GameState:
         new_state = GameState.__new__(GameState)
         new_state.state = self.state
         new_state.turn = self.turn
-        new_state.board = self.board.copy()
+        new_state.board = self.board.copy(new_state)
         new_state.orange = copy.deepcopy(self.orange)
         new_state.blue = copy.deepcopy(self.blue)
         return new_state
@@ -71,8 +71,8 @@ class GameState:
         return False
 
     def verify_win(self):
-        print(str(self.get_next_player()), " cells:")
-        print(self.get_next_player().get_cells())
+        #print(str(self.get_next_player()), " cells:")
+        #print(self.get_next_player().get_cells())
         return (self.get_next_player().get_stack_count() == 0 and len(self.get_next_player().get_cells()) == 0)
 
     def add_to_player_stack(self):
@@ -158,8 +158,6 @@ class GameState:
             self.place_saved_piece(self.board.get_random_cell(), bot)
         else:
             selectable_cells = bot.get_cells()
-            selectable_cells_board = self.board.get_selectable_cells(bot)
-            selectable_cells_bitboard = self.board.get_bitboard_selectable_cells(bot)
 
             random_select = random.choice(selectable_cells)
             cell = tuple(int(num) for num in random_select)
@@ -167,10 +165,8 @@ class GameState:
             self.select_cell(cell)
 
             movable_cells = self.board.current_possible_moves
-            print("Movable cells: " + str(movable_cells))
             random_move = random.choice(movable_cells)
             self.move_stack(random_move)
-            print("Moved from: " + str(cell) + " to " + str(random_move))
 
     def handle_medium_bot(self, bot):
 
@@ -190,7 +186,6 @@ class GameState:
                 new_state.select_cell(initial_position)
                 new_state.make_move(destination)
 
-            #print("Move: " + str(move))
             move_value = self.minimax(new_state, 0, float('-inf'), float('inf'), False, player, opponent)
             # Call to Negamax
             # move_value = self.negamax(new_state, 0, float('-inf'), float('inf'), 1)
@@ -199,10 +194,10 @@ class GameState:
                 best_value = move_value
                 best_move = move
 
+        print("Orange cells: ", self.orange.get_cells())
+        print("Blue Cells: ", self.blue.get_cells())
         self.select_cell(best_move.get_origin())
-        print("Selected Origin: " + str(best_move.get_origin()))
         self.make_move(best_move.get_destination())
-        print("Selected Destination: " + str(best_move.get_destination()))
 
     def handle_hard_bot(self, bot):
         pass

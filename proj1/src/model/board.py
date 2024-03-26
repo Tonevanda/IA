@@ -31,12 +31,12 @@ class Board:
     def get_total_cells(self) -> int:
         return self.size * self.size
     
-    def copy(self) -> 'Board':
+    def copy(self, game_state) -> 'Board':
         new_board = Board.__new__(Board)  # Create a new Board instance without calling __init__
-        new_board.game_state = self.game_state  # Copy game_state reference
+        new_board.game_state = game_state  # Copy game_state
         new_board.size = self.size  # Copy size
         new_board.stack_size = self.stack_size  # Copy stack_size
-        #new_board.stack_mask = self.stack_mask  # Copy stack_mask
+        new_board.stack_mask = self.stack_mask  # Copy stack_mask
         new_board.board = self.board  # Copy board state
         new_board.placeable_cells = list(self.placeable_cells)  # Create a new list from placeable_cells
         new_board.selected_cell = self.selected_cell  # Copy selected_cell
