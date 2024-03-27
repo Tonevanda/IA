@@ -33,6 +33,7 @@ class State:
     # Change the current state to the Game State
     def start_game(self, size: int, Orange: 'Player', Blue: 'Player') -> None:
         if isinstance(self.current_state, SelectMenuState): # If the current state is the Select Menu state
+            self.config.update_board_size(size) # Update the board size in the config
             self.current_state = GameState(self, size, Orange, Blue) # Change the current state to the Game state
 
     # Change the current state to the End state
@@ -52,4 +53,5 @@ class State:
     # Get the current state
     def get_state(self) -> 'State':
         return self.current_state
+    
     
