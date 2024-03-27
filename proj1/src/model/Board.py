@@ -76,14 +76,14 @@ class Board:
             for col in range(self.size):
                 if not self.is_on_edge(row, col): # If the cell is not on the edge of the board (where the pieces are placed)
                     self.make_stack(current_color) # Add a stack to the board
-                    self.game_state.add_to_player_cells_color((row, col), current_color) # Add the cell to the player's cells for better performance
+                    self.game_state.add_to_player_cells_color((self.size-row-1, self.size-col-1), current_color) # Add the cell to the player's cells for better performance
                     column_counter += 1
                     if column_counter % 2 == 0:
                         current_color = PIECE_BLUE if current_color == PIECE_ORANGE else PIECE_ORANGE
                 else:
                     if(first): # If it's the first time we are adding the pieces to the board
                         self.board |= PIECE_EMPTY # Add an empty piece to the board
-                        for i in range(self.stack_size - 2):
+                        for _ in range(self.stack_size - 2):
                             self.make_piece(PIECE_EMPTY)
                         first = False
                     else:

@@ -95,6 +95,7 @@ class GameState:
         return current_player.remove_stack_piece()
     
     def add_to_player_cells_color(self, cell, color):
+        print("Added to cell: " + str(cell) + " color: " + str(bin(color)))
         if color == PIECE_ORANGE:
             self.orange.add_cell(cell)
         else:
@@ -147,10 +148,10 @@ class GameState:
             return True
         return False
 
-    def move_stack(self, cell):
+    def move_stack(self, cell, player):
         made_move = False
         if cell in self.board.current_possible_moves:
-            self.board.make_move(cell, self.get_current_player())
+            self.board.make_move(cell, player)
             made_move = True
         self.unselect_cell()
         return made_move
@@ -160,7 +161,7 @@ class GameState:
         if(player.stack_selected):
             return self.place_saved_piece(cell, player)
         else:
-            return self.move_stack(cell)
+            return self.move_stack(cell, player)
 
     def is_bot_playing(self):
         return self.get_current_player().is_bot()
@@ -178,8 +179,9 @@ class GameState:
             self.select_cell(cell)
 
             movable_cells = self.board.current_possible_moves
+            print(movable_cells)
             random_move = random.choice(movable_cells)
-            self.move_stack(random_move)
+            self.move_stack(random_move, bot)
 
     def handle_medium_bot(self, bot):
 
@@ -205,8 +207,8 @@ class GameState:
                 best_move = move
 
         if(best_move.is_from_personal_stack()):
-            self.select_saved_player_stack(self.get_current_player())
-            self.place_saved_piece(best_move.get_destination(), self.get_current_player())
+            self.select_saved_player_stack(bot)
+            self.place_saved_piece(best_move.get_destination(), bot)
         else :
             self.select_cell(best_move.get_origin())
             self.make_move(best_move.get_destination())
@@ -238,7 +240,7 @@ class GameState:
             self.place_saved_piece(best_move.get_destination(), self.get_current_player())
         else:
             self.select_cell(best_move.get_origin())
-            self.make_move(best_move.get_destination())
+            self.move_stack(best_move.get_destination(), bot)
             
     def handle_bot(self, bot):
         if(bot.is_easy_bot()):
@@ -262,6 +264,7 @@ class GameState:
             has_played = self.gameController.handle_event(player)
 
         if(has_played):
+            print("Player " + str(player) + " cells: " + str(player.get_cells()))
             if(not self.did_win()):
                 self.next_turn()
             has_played = False
