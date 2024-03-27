@@ -292,7 +292,6 @@ class Board:
         stack >>= (num_pieces-1)*2 # Get the top piece of the stack
         return (stack&0b11) == color # Return if the top piece of the stack is the player's color
     
-    # TODO: Isto é muito mau, devíamos dar refactor geral para qualquer move ser da classe Move
     def get_valid_moves(self, player) -> np.ndarray:
         valid_moves = []
         movable_cells = player.get_cells()

@@ -1,12 +1,15 @@
 from model.Board import Board
 from controller.GameController import GameController
 from view.GameView import GameView
-from config import CELL_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, PIECE_ORANGE
+from config import CELL_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, PIECE_ORANGE, MEDIUM_BOT_DEPTH, HARD_BOT_DEPTH
 import random
 import copy
 from time import sleep
+from typing import Dict, Tuple
 
 class GameState:
+    memo: Dict[Tuple[int, int], int] = {}
+
     def __init__(self, state, size, orange, blue):
         self.state = state
         self.orange = orange    # Player 1
@@ -186,10 +189,10 @@ class GameState:
                 new_state.select_cell(initial_position)
                 new_state.make_move(destination)
             
-            move_value = self.minimax(new_state, 0, float('-inf'), float('inf'), False, player, opponent)
+            move_value = self.minimax(new_state, MEDIUM_BOT_DEPTH, float('-inf'), float('inf'), False, player, opponent)
             # Call to Negamax
             #move_value = self.negamax(new_state, 2, float('-inf'), float('inf'), 1)
-            print("Move: " + str(move.get_origin()) + " to " + str(move.get_destination()) + " Value: " + str(move_value))
+            #print("Move: " + str(move.get_origin()) + " to " + str(move.get_destination()) + " Value: " + str(move_value))
 
             if move_value > best_value:
                 best_value = move_value
@@ -240,15 +243,19 @@ class GameState:
         self.state.to_quit()
 
     def eval(self) -> int:
-        # Pieces in the personal stack are more valuable than pieces on the board
         current_player = self.get_current_player()
         next_player = self.get_next_player()
+        # Pieces in the personal stack are more valuable than pieces on the board
         return (current_player.get_stack_count() - next_player.get_stack_count()) * 10 + len(current_player.get_cells()) - len(next_player.get_cells())
     
     def minimax(self, state, depth, alpha, beta, maximizingPlayer, player, opponent):
         if depth == 0 or state.verify_win():
             return state.eval()
         
+        if (state.board.get_board(), depth) in GameState.memo:
+            print("Found State in Memo")
+            return GameState.memo[(state.board.get_board(), depth)]
+
         if maximizingPlayer:
             maxEval = float('-inf')
             for move in state.board.get_valid_moves(state.get_current_player()):
@@ -269,6 +276,8 @@ class GameState:
                 alpha = max(alpha, eval)
                 if beta <= alpha:
                     break
+            GameState.memo[(state.board.get_board(), depth)] = maxEval
+            print("Added State Max to Memo")
             return maxEval
         else:
             minEval = float('inf')
@@ -290,12 +299,18 @@ class GameState:
                 beta = min(beta, eval)
                 if beta <= alpha:
                     break
+            GameState.memo[(state.board.get_board(), depth)] = minEval
+            print("Added State Min to Memo")
             return minEval
         
     def negamax(self, state: 'GameState', depth: int, alpha: int, beta: int, color: int) -> int:
         if depth == 0 or state.verify_win():
             return color * state.eval()
         
+        if (state.board.get_board(), depth) in GameState.memo:
+            print("Found State in Memo")
+            return GameState.memo[(state.board.get_board(), depth)]
+
         maxEval = float('-inf')
         for move in state.board.get_valid_moves(state.get_current_player()):
             new_state = state.copy()
@@ -314,6 +329,6 @@ class GameState:
             alpha = max(alpha, eval)
             if beta <= alpha:
                 break
-        
+        GameState.memo[(state.board.get_board(), depth)] = maxEval
         return maxEval
     
