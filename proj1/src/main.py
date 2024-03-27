@@ -1,11 +1,10 @@
 import pygame
 from model.State import State
-from config import SCREEN_WIDTH, SCREEN_HEIGHT
 
 # Set up the pygame window
 def pygame_setup() -> pygame.Surface:
     pygame.init()
-    window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE) # Create the window with the starting width, height and set it as a resizable window
+    window = pygame.display.set_mode((800, 600), pygame.RESIZABLE) # Create the window with the starting width, height and set it as a resizable window
     pygame.display.set_caption("Focus") # Set the window's title
     return window
 

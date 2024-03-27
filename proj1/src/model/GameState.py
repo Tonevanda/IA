@@ -1,7 +1,7 @@
 from model.Board import Board
 from controller.GameController import GameController
 from view.GameView import GameView
-from config import CELL_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, PIECE_ORANGE, MEDIUM_BOT_DEPTH, HARD_BOT_DEPTH
+from config import PIECE_ORANGE, MEDIUM_BOT_DEPTH, HARD_BOT_DEPTH
 import random
 import copy
 from time import sleep
@@ -20,7 +20,7 @@ class GameState:
         self.last_move = None
 
         starting_cell = self.get_starting_cell()
-        self.gameView = GameView(self, self.board, starting_cell, self.orange, self.blue)
+        self.gameView = GameView(self, self.board, starting_cell, self.orange, self.blue, self.state.get_cell_size())
 
         self.turn = 1
 
@@ -37,12 +37,21 @@ class GameState:
         return self.last_move
 
     def get_starting_cell(self):
-        board_width = self.board.size * CELL_SIZE
-        board_height = self.board.size * CELL_SIZE
+        cell_size = self.state.get_cell_size()
 
-        start_x = (SCREEN_WIDTH - board_width) // 2
-        start_y = (SCREEN_HEIGHT - board_height) // 2
+        board_width = self.board.size * cell_size
+        board_height = self.board.size * cell_size
+
+        screen_width, screen_height = self.state.get_screen_size()
+        print(screen_width, screen_height)
+
+        start_x = (screen_width - board_width) // 2
+        start_y = (screen_height - board_height) // 2
         return (start_x, start_y)
+
+    def update_starting_cell(self, starting_cell):
+        self.starting_cell = starting_cell
+        self.gameView.update_starting_cell(starting_cell)
 
 
     def is_outside_board(self, cell_x, cell_y):
@@ -51,9 +60,10 @@ class GameState:
     # Takes a pixel and returns the position of the corresponding cell
     def get_pos(self, pixel: tuple) -> tuple:
         x, y = pixel
+        cell_size = self.state.get_cell_size()
         (starting_cell_x,starting_cell_y) = self.get_starting_cell()
-        cell_y = (x-starting_cell_x) // CELL_SIZE # Represents Columns
-        cell_x = (y-starting_cell_y) // CELL_SIZE # Represents Rows
+        cell_y = (x-starting_cell_x) // cell_size # Represents Columns
+        cell_x = (y-starting_cell_y) // cell_size # Represents Rows
         if self.is_outside_board(cell_x, cell_y): return (-1,-1)
         return (cell_x, cell_y)
     

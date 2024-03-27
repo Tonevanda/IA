@@ -1,5 +1,4 @@
 import pygame
-from config import SCREEN_WIDTH
 
 class EndView:
     def __init__(self):

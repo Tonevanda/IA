@@ -29,15 +29,16 @@ class PlayerView:
             pygame.draw.rect(window, (255, 255, 0), position)
 
     def draw(self, window):
+        window_width, window_height = window.get_size()
+        stack_position = (50, 50, 80, 80)
+
         if (self.player.get_color() == "Orange"):
             self.draw_name(window, (20, 20), (255, 100, 0))
             self.draw_selected_stack(window, (50, 50, 80, 80))
-            self.draw_stack(window, (50, 50, 80, 80), (255, 100, 0))
+            self.draw_stack(window, stack_position, (255, 100, 0))
         else:
-            self.draw_name(window, (590, 20), (50, 50, 255))
-            self.draw_selected_stack(window, (630, 50, 80, 80))
-            self.draw_stack(window, (630, 50, 80, 80), (50, 50, 255))
-        
-        
-
-        
+            name_position = (window_width - 200, 20)
+            self.draw_name(window, name_position, (50, 50, 255))
+            stack_position = (window_width - 160, 50, 80, 80)
+            self.draw_selected_stack(window, stack_position)
+            self.draw_stack(window, stack_position, (50, 50, 255))

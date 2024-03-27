@@ -3,13 +3,26 @@ from model.SelectMenuState import SelectMenuState
 from model.GameState import GameState
 from model.EndState import EndState
 from model.Player import Player
+from config import Config
 
 class State:
     def __init__(self):
         self.current_state = MainMenuState(self)
+        self.config = Config()
+
+    def handle_screen_size(self, window: object) -> None:
+        width, height = window.get_width(), window.get_height()
+        self.config.set_screen_size(width, height)
+
+    def get_screen_size(self) -> tuple:
+        return self.config.get_screen_size()
+    
+    def get_cell_size(self) -> int:
+        return self.config.get_cell_size()
 
     # Run the current state
     def run(self, window: object) -> None:
+        self.handle_screen_size(window)
         self.current_state.run(window)
 
     # Change the current state to the Select Menu state

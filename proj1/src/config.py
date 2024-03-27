@@ -1,6 +1,3 @@
-SCREEN_WIDTH =              800
-SCREEN_HEIGHT =             600
-CELL_SIZE =                 50 # TODO: This should depend on the screen size and board size
 PIECE_NONE =                0b11
 PIECE_EMPTY =               0b00
 PIECE_ORANGE =              0b01
@@ -10,3 +7,19 @@ STACK_MAX_SIZES =           {6: 3, 8: 5, 10: 5, 12: 5}
 STACK_MASKS =               {6: 0b111111, 8: 0b1111111111, 10: 0b1111111111, 12: 0b1111111111}
 MEDIUM_BOT_DEPTH =          1
 HARD_BOT_DEPTH =            2
+
+class Config:
+    def __init__(self) -> None:
+        self.screen_width = 800
+        self.screen_height = 600
+        self.cell_size = 50
+
+    def get_screen_size(self):
+        return self.screen_width, self.screen_height
+    
+    def get_cell_size(self):
+        return self.cell_size
+
+    def set_screen_size(self, width, height):
+        self.screen_width = width
+        self.screen_height = height

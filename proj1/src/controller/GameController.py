@@ -1,5 +1,4 @@
 import pygame
-from config import SCREEN_WIDTH, SCREEN_HEIGHT, CELL_SIZE
 
 class GameController:
     def __init__(self, game_state):
@@ -12,11 +11,12 @@ class GameController:
     # TODO: Maybe don't use pygame.mouse.get_pos() and replace with cell
     def clicked_saved_player_stack(self, player):
         mouse_pos = pygame.mouse.get_pos()
+        window_width, _ = pygame.display.get_surface().get_size()
 
         if player.get_color() == 'Orange':
             check_rect = pygame.Rect(50, 50, 80, 80)
         elif player.get_color() == 'Blue':
-            check_rect = pygame.Rect(630, 50, 80, 80)
+            check_rect = pygame.Rect(window_width - 160, 50, 80, 80)
 
         return check_rect.collidepoint(mouse_pos)
 
