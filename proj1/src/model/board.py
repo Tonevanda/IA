@@ -181,17 +181,15 @@ class Board:
         return None
 
 
-    def remove_from_stack(self, stack: int, num_pieces: int) -> int:
-        stack_pieces = self.get_stack_size(stack)-1 # The number of pieces in the stack
-
+    def remove_from_stack(self, stack: int, num_pieces: int, stack_pieces: int) -> int:
         for i in range(num_pieces):
             stack &= ~(0b11 << ((stack_pieces-i) * 2)) # Remove n bottom pieces from the stack
         return stack & self.stack_mask # Return the new stack with the proper size
 
     # Returns the pieces removed from the stack
-    def get_removed_from_stack(self, stack: int, num_pieces: int) -> int:
-        removed = 0b0 # The removed pieces
-        stack_pieces = self.get_stack_size(stack)-1 # The number of pieces in the stack
+    def get_removed_from_stack(self, stack: int, num_pieces: int, stack_pieces: int) -> int:
+        removed = 0b0
+
         for i in range(num_pieces): # For each piece removed
             piece_removed = (stack & (0b11 << ((stack_pieces-i)*2))) >> ((stack_pieces-i)*2) # Get the piece removed
             removed <<= 2 # Shift the removed pieces to the left
@@ -201,7 +199,8 @@ class Board:
     
     # Adds new pieces to a given stack
     def add_pieces_to_stack(self, stack: int, removed_stack: int) -> int:
-        shift = self.get_stack_size(stack) * 2 # Get where to add the new pieces
+        stack_size = self.get_stack_size(stack)
+        shift = stack_size * 2 # Get where to add the new pieces
         removed_stack <<= shift # Shift the removed pieces (new pieces) to the right position
         stack |= removed_stack # Add the removed pieces (new pieces) to the stack
         return stack
@@ -221,8 +220,10 @@ class Board:
 
     # Handles the stack size limit by removing the pieces that exceed the limit
     def handle_stack_size_limit(self, stack: int, bitmap_position: int) -> None:
-        if(self.get_stack_size(stack) > self.stack_size): # If the stack exceeds the limit
-            overflow = self.get_stack_size(stack) - self.stack_size # Get the number of pieces that exceed the limit
+        stack_size = self.get_stack_size(stack)
+
+        if(stack_size > self.stack_size): # If the stack exceeds the limit
+            overflow = stack_size - self.stack_size # Get the number of pieces that exceed the limit
             rest = stack & ~(self.stack_mask << overflow*2) # Get the pieces that don't exceed the limit
             stack = (stack & (self.stack_mask << overflow*2)) >> (overflow*2) # Get the pieces that exceed the limit
             self.handle_removed_pieces(rest) # Calls the function that will handle the pieces that exceed the limit by adding to the player stack or deleting them
@@ -237,21 +238,23 @@ class Board:
         source_stack = self.get_stack(source) # Get the source stack (before the move)
         destination_stack = self.get_stack(destination) # Get the destination stack (before the move)
 
-        new_source_stack = self.remove_from_stack(source_stack, distance) # Remove the pieces from the source stack
-        removed_stack = self.get_removed_from_stack(source_stack, distance) # Get the pieces removed from the source stack
+        source_stack_size = self.get_stack_size(source_stack)-1
+
+        new_source_stack = self.remove_from_stack(source_stack, distance, source_stack_size) # Remove the pieces from the source stack
+        removed_stack = self.get_removed_from_stack(source_stack, distance, source_stack_size) # Get the pieces removed from the source stack
         new_destination_stack = self.add_pieces_to_stack(destination_stack, removed_stack) # Add the pieces removed from the source stack to the destination stack
 
         # Add the destination of the moving stack to the current player's cells
         self.game_state.add_to_player_cells(destination, self.game_state.get_current_player())
         
         # if the destination belonged to the opponent, remove it from the opponent's cells
-        if(self.is_player_stack(destination, self.game_state.get_next_player())):
+        if(self.is_player_stack(destination_stack, self.game_state.get_next_player())):
             self.game_state.remove_from_player_cells(destination, self.game_state.get_next_player())
 
         self.substitute_stack(source_pos, new_source_stack) # Replace the source stack with the new source stack
 
         # if the source stack now belongs to the opponent, add it to the opponent's cells and remove it from the current player's cells
-        if(self.is_player_stack(source, self.game_state.get_next_player())):
+        if(self.is_player_stack(source_stack, self.game_state.get_next_player())):
             self.game_state.remove_from_player_cells(source, self.game_state.get_current_player())
             self.game_state.add_to_player_cells(source, self.game_state.get_next_player())
         elif(self.is_empty_stack(new_source_stack)): # if the source stack is now empty, remove it from the current player's cells
@@ -269,7 +272,7 @@ class Board:
         # Add the destination of the moving stack to the current player's cells
         self.game_state.add_to_player_cells(cell, self.game_state.get_current_player())
         # if the destination belonged to the opponent, remove it from the opponent's cells
-        if(self.is_player_stack(cell, self.game_state.get_next_player())):
+        if(self.is_player_stack(destination_stack, self.game_state.get_next_player())):
             self.game_state.remove_from_player_cells(cell, self.game_state.get_next_player())
 
         self.handle_stack_size_limit(new_destination_stack, destination_pos) # Call the function that will handle the stack size limit and the change of the destination stack in the board
@@ -279,12 +282,11 @@ class Board:
         selected_stack = self.get_stack(self.selected_cell)
         #if the move is valid, the pieces are moved and the turn changes
         #the move is valid if the stack at the current position is not empty, the top piece is the current player's color, and the destination is in the list of possible moves
-        if(not self.is_empty_stack(selected_stack) and self.is_player_stack(self.selected_cell, current_player)):
+        if(not self.is_empty_stack(selected_stack) and self.is_player_stack(selected_stack, current_player)):
             self.transfer_pieces(self.selected_cell, pos)
 
     # Given a cell, returns if it belongs to a given player
-    def is_player_stack(self, cell: tuple, player: 'Player') -> bool:
-        stack = self.get_stack(cell) # Get the stack at the cell
+    def is_player_stack(self, stack: int, player: 'Player') -> bool:
         num_pieces = self.get_stack_size(stack) # Get the number of pieces in the stack
         if num_pieces == 0: # If the stack is empty, it doesn't belong to the player
             return False

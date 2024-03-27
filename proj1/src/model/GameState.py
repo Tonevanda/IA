@@ -44,7 +44,6 @@ class GameState:
         board_height = self.board.size * cell_size
 
         screen_width, screen_height = self.state.get_screen_size()
-        print(screen_width, screen_height)
 
         start_x = (screen_width - board_width) // 2
         start_y = (screen_height - board_height) // 2
@@ -115,7 +114,8 @@ class GameState:
         return (self.board.current_possible_moves == None and self.get_current_player().stack_selected == False)
     
     def can_select_cell(self, cell):
-        return (self.board.is_player_stack(cell, self.get_current_player()))
+        stack = self.board.get_stack(cell)
+        return (self.board.is_player_stack(stack, self.get_current_player()))
 
     def select_cell(self, cell):
         if self.can_select_cell(cell):
