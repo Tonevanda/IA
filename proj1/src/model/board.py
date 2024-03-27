@@ -254,7 +254,7 @@ class Board:
         self.substitute_stack(source_pos, new_source_stack) # Replace the source stack with the new source stack
 
         # if the source stack now belongs to the opponent, add it to the opponent's cells and remove it from the current player's cells
-        if(self.is_player_stack(source_stack, self.game_state.get_next_player())):
+        if(self.is_player_stack(new_source_stack, self.game_state.get_next_player())):
             self.game_state.remove_from_player_cells(source, self.game_state.get_current_player())
             self.game_state.add_to_player_cells(source, self.game_state.get_next_player())
         elif(self.is_empty_stack(new_source_stack)): # if the source stack is now empty, remove it from the current player's cells

@@ -83,7 +83,8 @@ class GameState:
         return False
 
     def verify_win(self):
-        return (self.get_next_player().get_stack_count() == 0 and len(self.get_next_player().get_cells()) == 0)
+        next_player = self.get_next_player()
+        return (next_player.get_stack_count() == 0 and len(next_player.get_cells()) == 0)
 
     def add_to_player_stack(self):
         current_player = self.get_current_player()
