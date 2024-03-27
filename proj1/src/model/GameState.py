@@ -8,7 +8,8 @@ from time import sleep
 from typing import Dict, Tuple
 
 class GameState:
-    memo: Dict[Tuple[int, int], int] = {}
+    # Hashmap that stores, for each pair of board, and pair of player stacks, and depth, the value of the state
+    memo: Dict[Tuple[Tuple[int, Tuple[int, int]], int], int] = {}
 
     def __init__(self, state, size, orange, blue):
         self.state = state
@@ -52,7 +53,6 @@ class GameState:
     def update_starting_cell(self, starting_cell):
         self.starting_cell = starting_cell
         self.gameView.update_starting_cell(starting_cell)
-
 
     def is_outside_board(self, cell_x, cell_y):
         return cell_x >= self.board.get_size() or cell_y >= self.board.get_size() or cell_x < 0 or cell_y < 0
@@ -189,8 +189,6 @@ class GameState:
             new_state = self.copy()
             initial_position = move.get_origin()
             destination = move.get_destination()
-            player = new_state.get_current_player() 
-            opponent = new_state.get_next_player()
             
             if(move.is_from_personal_stack()):
                 new_state.select_saved_player_stack(new_state.get_current_player())
@@ -199,10 +197,7 @@ class GameState:
                 new_state.select_cell(initial_position)
                 new_state.make_move(destination)
             
-            move_value = self.minimax(new_state, MEDIUM_BOT_DEPTH, float('-inf'), float('inf'), False, player, opponent)
-            # Call to Negamax
-            #move_value = self.negamax(new_state, 2, float('-inf'), float('inf'), 1)
-            #print("Move: " + str(move.get_origin()) + " to " + str(move.get_destination()) + " Value: " + str(move_value))
+            move_value = self.negamax(new_state, MEDIUM_BOT_DEPTH - 1, float('-inf'), float('inf'), 1)
 
             if move_value > best_value:
                 best_value = move_value
@@ -214,10 +209,35 @@ class GameState:
         else :
             self.select_cell(best_move.get_origin())
             self.make_move(best_move.get_destination())
-        #print("Best Move: " + str(best_move.get_origin()) + " to " + str(best_move.get_destination()) + " Value: " + str(best_value))
 
     def handle_hard_bot(self, bot):
-        pass
+        best_value = float('-inf')
+        best_move = None
+        
+        for move in self.board.get_valid_moves(bot):
+            new_state = self.copy()
+            initial_position = move.get_origin()
+            destination = move.get_destination()
+            
+            if(move.is_from_personal_stack()):
+                new_state.select_saved_player_stack(new_state.get_current_player())
+                new_state.place_saved_piece(destination, new_state.get_current_player())
+            else:
+                new_state.select_cell(initial_position)
+                new_state.make_move(destination)
+            
+            move_value = self.negamax(new_state, HARD_BOT_DEPTH - 1, float('-inf'), float('inf'), 1)
+
+            if move_value > best_value:
+                best_value = move_value
+                best_move = move
+
+        if(best_move.is_from_personal_stack()):
+            self.select_saved_player_stack(self.get_current_player())
+            self.place_saved_piece(best_move.get_destination(), self.get_current_player())
+        else:
+            self.select_cell(best_move.get_origin())
+            self.make_move(best_move.get_destination())
             
     def handle_bot(self, bot):
         if(bot.is_easy_bot()):
@@ -257,6 +277,35 @@ class GameState:
         next_player = self.get_next_player()
         # Pieces in the personal stack are more valuable than pieces on the board
         return (current_player.get_stack_count() - next_player.get_stack_count()) * 10 + len(current_player.get_cells()) - len(next_player.get_cells())
+    
+    def negamax(self, state: 'GameState', depth: int, alpha: int, beta: int, color: int) -> int:
+        if depth == 0 or state.verify_win():
+            return color * state.eval()
+        
+        if ((state.board.get_board(), (state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count())), depth) in GameState.memo:
+            print("Found State in Memo")
+            return GameState.memo[((state.board.get_board(), (state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count())), depth)]
+
+        maxEval = float('-inf')
+        for move in state.board.get_valid_moves(state.get_current_player()):
+            new_state = state.copy()
+            initial_position = move.get_origin()
+            destination = move.get_destination()
+
+            if(move.is_from_personal_stack()):
+                new_state.handle_saved_player_stack_selection(new_state.get_current_player())
+                new_state.place_saved_piece(destination, new_state.get_current_player())
+            else:
+                new_state.select_cell(initial_position)
+                new_state.make_move(destination)
+
+            eval = -new_state.negamax(new_state, depth-1, -beta, -alpha, -color)
+            maxEval = max(maxEval, eval)
+            alpha = max(alpha, eval)
+            if beta <= alpha:
+                break
+        GameState.memo[((state.board.get_board(), (state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count())), depth)] = maxEval
+        return maxEval
     
     def minimax(self, state, depth, alpha, beta, maximizingPlayer, player, opponent):
         if depth == 0 or state.verify_win():
@@ -312,33 +361,3 @@ class GameState:
             GameState.memo[(state.board.get_board(), depth)] = minEval
             print("Added State Min to Memo")
             return minEval
-        
-    def negamax(self, state: 'GameState', depth: int, alpha: int, beta: int, color: int) -> int:
-        if depth == 0 or state.verify_win():
-            return color * state.eval()
-        
-        if (state.board.get_board(), depth) in GameState.memo:
-            print("Found State in Memo")
-            return GameState.memo[(state.board.get_board(), depth)]
-
-        maxEval = float('-inf')
-        for move in state.board.get_valid_moves(state.get_current_player()):
-            new_state = state.copy()
-            initial_position = move.get_origin()
-            destination = move.get_destination()
-
-            if(move.is_from_personal_stack()):
-                new_state.handle_saved_player_stack_selection(new_state.get_current_player())
-                new_state.place_saved_piece(destination, new_state.get_current_player())
-            else:
-                new_state.select_cell(initial_position)
-                new_state.make_move(destination)
-
-            eval = -new_state.negamax(new_state, depth-1, -beta, -alpha, -color)
-            maxEval = max(maxEval, eval)
-            alpha = max(alpha, eval)
-            if beta <= alpha:
-                break
-        GameState.memo[(state.board.get_board(), depth)] = maxEval
-        return maxEval
-    

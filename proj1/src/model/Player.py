@@ -10,7 +10,6 @@ class Player:
         self.cells = np.empty((0, 2), int)
 
     # Get the cells that the player has pieces on
-    # TODO: Why when calling this, the cells don't work like they should
     def get_cells(self) -> np.ndarray:
         return self.cells
     
