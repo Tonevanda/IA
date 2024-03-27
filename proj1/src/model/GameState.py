@@ -6,6 +6,7 @@ import random
 import copy
 from time import sleep
 from typing import Dict, Tuple
+from model.Move import Move
 
 class GameState:
     # Hashmap that stores, for each pair of board, and pair of player stacks, and depth, the value of the state
@@ -95,7 +96,6 @@ class GameState:
         return current_player.remove_stack_piece()
     
     def add_to_player_cells_color(self, cell, color):
-        print("Added to cell: " + str(cell) + " color: " + str(bin(color)))
         if color == PIECE_ORANGE:
             self.orange.add_cell(cell)
         else:
@@ -144,6 +144,7 @@ class GameState:
         if player.stack_selected:
             self.board.place_saved_piece(cell, player)
             self.remove_from_player_stack()
+            self.last_move = Move((None, None), cell, True)
             self.unselect_saved_player_stack(player)
             return True
         return False
@@ -153,6 +154,7 @@ class GameState:
         if cell in self.board.current_possible_moves:
             self.board.make_move(cell, player)
             made_move = True
+            self.last_move = Move(self.board.selected_cell, cell)
         self.unselect_cell()
         return made_move
 
@@ -179,7 +181,6 @@ class GameState:
             self.select_cell(cell)
 
             movable_cells = self.board.current_possible_moves
-            print(movable_cells)
             random_move = random.choice(movable_cells)
             self.move_stack(random_move, bot)
 
@@ -264,7 +265,6 @@ class GameState:
             has_played = self.gameController.handle_event(player)
 
         if(has_played):
-            print("Player " + str(player) + " cells: " + str(player.get_cells()))
             if(not self.did_win()):
                 self.next_turn()
             has_played = False
@@ -287,7 +287,6 @@ class GameState:
             return color * state.eval()
         
         if ((state.board.get_board(), (state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count())), depth) in GameState.memo:
-            print("Found State in Memo")
             return GameState.memo[((state.board.get_board(), (state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count())), depth)]
 
         maxEval = float('-inf')
@@ -317,7 +316,6 @@ class GameState:
             return state.eval()
         
         if (state.board.get_board(), depth) in GameState.memo:
-            print("Found State in Memo")
             return GameState.memo[(state.board.get_board(), depth)]
 
         if maximizingPlayer:
@@ -341,7 +339,6 @@ class GameState:
                 if beta <= alpha:
                     break
             GameState.memo[(state.board.get_board(), depth)] = maxEval
-            print("Added State Max to Memo")
             return maxEval
         else:
             minEval = float('inf')
@@ -364,5 +361,4 @@ class GameState:
                 if beta <= alpha:
                     break
             GameState.memo[(state.board.get_board(), depth)] = minEval
-            print("Added State Min to Memo")
             return minEval

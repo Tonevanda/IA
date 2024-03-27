@@ -8,7 +8,6 @@ class GameController:
         stack = self.game_state.board.get_stack(cell)
         return (not self.game_state.board.is_none_stack(stack))
 
-    # TODO: Maybe don't use pygame.mouse.get_pos() and replace with cell
     def clicked_saved_player_stack(self, player):
         mouse_pos = pygame.mouse.get_pos()
         window_width, _ = pygame.display.get_surface().get_size()

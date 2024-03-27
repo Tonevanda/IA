@@ -14,7 +14,6 @@ class Board:
         self.placeable_cells = []
         self.make_board()
         
-        
         self.selected_cell = None
 
         # TODO: Refactor so this is inside Player.py
@@ -39,13 +38,11 @@ class Board:
         new_board.stack_size = self.stack_size  # Copy stack_size
         new_board.stack_mask = self.stack_mask  # Copy stack_mask
         new_board.board = self.board  # Copy board state
-        new_board.placeable_cells = list(self.placeable_cells)  # Create a new list from placeable_cells
         new_board.selected_cell = self.selected_cell  # Copy selected_cell
         new_board.placeable_cells = list(self.placeable_cells) if self.placeable_cells else None  # Create a new list from placeable_cells
         new_board.current_possible_moves = list(self.current_possible_moves) if self.current_possible_moves else None  # Create a new list from current_possible_moves
         return new_board
 
-    # TODO: better way where it takes into account the cuts
     def get_random_cell(self) -> tuple:
         return random.choice(self.placeable_cells)
 
@@ -134,7 +131,6 @@ class Board:
         bitmap_pos = self.get_bitmap_position(row, col) # Get the position in the bitmap
         return (self.board >> (bitmap_pos * self.stack_size * 2)) & self.stack_mask # Get the stack at the position
 
-    # TODO: All this functions could be inside Stack.py to be better organized (but not turning it into an object)
     def is_none_stack(self, stack: int) -> bool:
         return stack == self.stack_mask # A none stack is a stack filled with 0b11 aka a stack_mask
     
@@ -156,7 +152,6 @@ class Board:
         return bin(stack).count("1") # Since Orange is 01 and Blue is 10, we can count the number of 1s to get the number of pieces
     
     # Takes a cell and returns a list of possible moves from the corresponding cell
-    # TODO: Check if removing the firsts ifs doesn't break the code
     def get_possible_moves(self, cell: tuple) -> list[tuple]:
         x,y = cell
         stack = self.get_stack(cell)
@@ -210,7 +205,6 @@ class Board:
         return abs(destination[0] - source[0]) + abs(destination[1] - source[1])
 
     # Handles the pieces removed from a stack
-    # TODO: Join this with handle_stack_size_limit if we can
     def handle_removed_pieces(self, removed_pieces: int) -> None:
         amount = self.get_stack_size(removed_pieces) # The number of pieces removed
         for i in range(amount):
@@ -280,17 +274,15 @@ class Board:
     # Makes a move in the board
     def make_move(self, pos: tuple, current_player: 'Player') -> None:
         selected_stack = self.get_stack(self.selected_cell)
-        #if the move is valid, the pieces are moved and the turn changes
-        #the move is valid if the stack at the current position is not empty, the top piece is the current player's color, and the destination is in the list of possible moves
         if(not self.is_empty_stack(selected_stack) and self.is_player_stack(selected_stack, current_player)):
             self.transfer_pieces(self.selected_cell, pos)
 
     # Given a cell, returns if it belongs to a given player
     def is_player_stack(self, stack: int, player: 'Player') -> bool:
-        num_pieces = self.get_stack_size(stack) # Get the number of pieces in the stack
+        num_pieces = self.get_stack_size(stack)
         if num_pieces == 0: # If the stack is empty, it doesn't belong to the player
             return False
-        color = player.get_color_bits() # Get the color bits of the player
+        color = player.get_color_bits()
         stack >>= (num_pieces-1)*2 # Get the top piece of the stack
         return (stack&0b11) == color # Return if the top piece of the stack is the player's color
     
