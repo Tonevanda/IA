@@ -304,6 +304,7 @@ class GameState:
             alpha = max(alpha, eval)
             if beta <= alpha:
                 break
+        # TODO: Falta adicionar mirroring
         GameState.memo[((state.board.get_board(), (state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count())), depth)] = maxEval
         return maxEval
     
