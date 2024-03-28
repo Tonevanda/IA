@@ -287,18 +287,16 @@ class Board:
         return (stack&0b11) == color # Return if the top piece of the stack is the player's color
     
     def get_valid_moves(self, player) -> np.ndarray:
-        valid_moves = []
         movable_cells = player.get_cells()
         # Represents moves with board piece
-        for cell in movable_cells:
-            valid_cell = tuple(int(num) for num in cell) # Convert nparray[npint32 npint32] to tuple(int, int)
-            moves = self.get_possible_moves(valid_cell) 
-            if moves is not None:
-                valid_moves.extend([Move(valid_cell, move) for move in moves])
+        valid_moves = [Move(tuple(int(num) for num in cell), move) 
+                    for cell in movable_cells 
+                    for move in self.get_possible_moves(tuple(int(num) for num in cell)) 
+                    if self.get_possible_moves(tuple(int(num) for num in cell)) is not None]
 
         # Represents moves with saved pieces
         if player.has_saved_pieces():
-            valid_moves.extend([Move((None, None), cell, True) for cell in self.placeable_cells])
-
+            valid_moves.extend(Move((None, None), cell, True) for cell in self.placeable_cells)
+        
         return np.array(valid_moves)
-            
+                
