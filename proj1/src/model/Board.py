@@ -153,25 +153,15 @@ class Board:
     
     # Takes a cell and returns a list of possible moves from the corresponding cell
     def get_possible_moves(self, cell: tuple) -> list[tuple]:
-        x,y = cell
+        x, y = cell
         stack = self.get_stack(cell)
-        max_move = self.get_stack_size(stack) # The maximum number of moves is the number of pieces in the stack
+        max_move = self.get_stack_size(stack)  # The maximum number of moves is the number of pieces in the stack
 
         if max_move > 0:
-            moves = []
-            for distance in range(1, max_move + 1): # The distance can be from 1 to the number of pieces in the stack
-                if 0 <= x - distance < self.size:
-                    if(not self.is_outside_board((x - distance, y))):
-                        moves.append((x - distance, y))
-                if(0 <= x + distance < self.size):
-                    if(not self.is_outside_board((x + distance, y))):
-                        moves.append((x + distance, y))
-                if(0 <= y - distance < self.size):
-                    if(not self.is_outside_board((x, y - distance))):
-                        moves.append((x, y - distance))
-                if(0 <= y + distance < self.size):
-                    if(not self.is_outside_board((x, y + distance))):
-                        moves.append((x, y + distance))
+            moves = [(x + dx, y) for dx in range(-max_move, max_move + 1) 
+                    if dx != 0 and 0 <= x + dx < self.size and not self.is_outside_board((x + dx, y))]
+            moves += [(x, y + dy) for dy in range(-max_move, max_move + 1) 
+                    if dy != 0 and 0 <= y + dy < self.size and not self.is_outside_board((x, y + dy))]
             return moves
         return None
 
