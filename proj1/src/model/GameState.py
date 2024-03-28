@@ -10,7 +10,8 @@ from model.Move import Move
 
 class GameState:
     # Hashmap that stores, for each pair of board, and pair of player stacks, and depth, the value of the state
-    memo: Dict[Tuple[Tuple[int, Tuple[int, int]], int], int] = {}
+    # ((board, player1_stack, player2_stack), eval_func, depth) -> value
+    memo: Dict[Tuple[Tuple[int, int, int], str, int], int] = {}
 
     def __init__(self, state, size, orange, blue):
         self.state = state
@@ -201,7 +202,8 @@ class GameState:
                 new_state.select_cell(initial_position)
                 new_state.make_move(destination)
             
-            move_value = self.negamax(new_state, MEDIUM_BOT_DEPTH - 1, float('-inf'), float('inf'), 1)
+            move_value = self.negamax(new_state, MEDIUM_BOT_DEPTH - 1, float('-inf'), float('inf'), 1, self.eval_medium)
+            #print("Move: ", move, "Value: ", move_value)
 
             if move_value > best_value:
                 best_value = move_value
@@ -230,7 +232,7 @@ class GameState:
                 new_state.select_cell(initial_position)
                 new_state.make_move(destination)
             
-            move_value = self.negamax(new_state, HARD_BOT_DEPTH - 1, float('-inf'), float('inf'), 1)
+            move_value = self.negamax(new_state, HARD_BOT_DEPTH - 1, float('-inf'), float('inf'), 1, self.eval_hard)
 
             if move_value > best_value:
                 best_value = move_value
@@ -265,7 +267,6 @@ class GameState:
             has_played = self.gameController.handle_event(player)
 
         if(has_played):
-            #self.board.board = self.board.get_transpose_board(self.board.board)
             if(not self.did_win()):
                 self.next_turn()
             has_played = False
@@ -277,26 +278,43 @@ class GameState:
     def to_quit(self):
         self.state.to_quit()
 
-    def eval(self) -> int:
-        current_player = self.get_current_player()
-        next_player = self.get_next_player()
-        # Pieces in the personal stack are more valuable than pieces on the board
-        return (current_player.get_stack_count() - next_player.get_stack_count()) * 10 + len(current_player.get_cells()) - len(next_player.get_cells())
+    def eval_medium(self, state) -> int:
+        current_player = state.get_current_player()
+        next_player = state.get_next_player()
+        if state.verify_win():
+            return 1000
+        return len(current_player.get_cells()) - len(next_player.get_cells())
     
-    def add_to_memo(self, state: 'GameState', depth: int, value: int) -> None:
-        GameState.memo[((state.board.get_board(), (state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count())), depth)] = value
-        GameState.memo[((state.board.get_mirror_board(), (state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count())), depth)] = value
-        GameState.memo[((state.board.get_transpose_board(), (state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count())), depth)] = value
-        GameState.memo[((state.board.get_mirror_transpose_board(), (state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count())), depth)] = value
-        GameState.memo[((state.board.get_transpose_mirror_board(), (state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count())), depth)] = value
-        GameState.memo[((state.board.get_inverse_board(), (state.get_next_player().get_stack_count(), state.get_current_player().get_stack_count())), depth)] = -value
+    # TODO: Implement a better evaluation function
+    # 1. Quantos espaços está a controlar na board (quantos mais melhor)
+    # 2. Quantos espaços tem na board (quantos mais melhor)
+    # 3. Quantas peças tem no total (quantas mais melhor)
+    # 4. Quantas peças tem na stack pessoal (quantas mais melhor)
+    def eval_hard(self, state) -> int:
+        current_player = state.get_current_player()
+        next_player = state.get_next_player()
+        if state.verify_win():
+            return 1000
+        cells_difference = len(current_player.get_cells()) - len(next_player.get_cells())
+        controlled_cells_difference = len(current_player.get_controlled_cells()) - len(next_player.get_controlled_cells())
+        stack_difference = current_player.get_stack_count() - next_player.get_stack_count()
 
-    def negamax(self, state: 'GameState', depth: int, alpha: int, beta: int, color: int) -> int:
+
+        return cells_difference + 2*controlled_cells_difference + stack_difference
+
+
+    def add_to_memo(self, state: 'GameState', depth: int, value: int, eval_func: str) -> None:
+        board = state.board.get_board()
+        GameState.memo[((board, state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count()), eval_func, depth)] = value
+        GameState.memo[((state.board.get_mirror_board(board), state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count()), eval_func, depth)] = value
+        GameState.memo[((state.board.get_inverse_board(board), state.get_next_player().get_stack_count(), state.get_current_player().get_stack_count()), eval_func, depth)] = -value
+
+    def negamax(self, state: 'GameState', depth: int, alpha: int, beta: int, color: int, eval_func) -> int:
         if depth == 0 or state.verify_win():
-            return color * state.eval()
+            return color * eval_func(state)
         
-        if ((state.board.get_board(), (state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count())), depth) in GameState.memo:
-            return GameState.memo[((state.board.get_board(), (state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count())), depth)]
+        if ((state.board.get_board(), state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count()), eval_func.__name__, depth) in GameState.memo:
+            return GameState.memo[((state.board.get_board(),state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count()), eval_func.__name__, depth)]
 
         maxEval = float('-inf')
         for move in state.board.get_valid_moves(state.get_current_player()):
@@ -311,14 +329,13 @@ class GameState:
                 new_state.select_cell(initial_position)
                 new_state.make_move(destination)
 
-            eval = -new_state.negamax(new_state, depth-1, -beta, -alpha, -color)
+            eval = -new_state.negamax(new_state, depth-1, -beta, -alpha, -color, eval_func)
             maxEval = max(maxEval, eval)
             alpha = max(alpha, eval)
             if beta <= alpha:
                 break
-        # TODO: Falta adicionar mirroring
         
-        self.add_to_memo(state, depth, maxEval)
+        self.add_to_memo(state, depth, maxEval, eval_func.__name__)
 
         return maxEval
     

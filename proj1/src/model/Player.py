@@ -8,6 +8,7 @@ class Player:
         self.player_type = player_type
         self.stack_selected = False
         self.cells = np.empty((0, 2), int)
+        self.controlled_cells = set()
 
     # Get the cells that the player has pieces on
     def get_cells(self) -> np.ndarray:
@@ -28,6 +29,18 @@ class Player:
         self.cells = np.array([existing_cell for existing_cell in self.cells if not np.array_equal(cell, existing_cell)]) # Remove the cell from the player's cells
         if(self.cells.size == 0):
             self.cells = np.empty((0, 2), int)
+
+    def get_controlled_cells(self) -> set:
+        return self.controlled_cells
+    
+    def add_controlled_cell(self, cell: tuple) -> None:
+        self.controlled_cells.add(cell)
+
+    def update_controlled_cells(self, cells) -> None:
+        self.controlled_cells = set(cells)
+
+    def clear_controlled_cells(self) -> None:
+        self.controlled_cells.clear()
 
     # Get the player type
     def get_player_type(self) -> str:

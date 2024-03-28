@@ -33,9 +33,12 @@ class Board:
             new_board |= stack << ((size_total - i - 1) * self.stack_size * 2)
         return new_board
     
+    # TODO: Maybe implement this
     def get_transpose_board(self, board) -> int:
         pass
-
+    
+    def get_rotated_board(self, board) -> int:
+        pass
     
     def get_bitboard_stack(self, bitboard_pos: int, board: int) -> int:
         return (board >> (bitboard_pos * self.stack_size * 2)) & self.stack_mask
@@ -309,6 +312,7 @@ class Board:
     
     def get_valid_moves(self, player) -> np.ndarray:
         movable_cells = player.get_cells()
+        player.clear_controlled_cells()
         # Represents moves with board piece
         valid_moves = [Move(tuple(int(num) for num in cell), move) 
                for cell in movable_cells 
@@ -318,6 +322,8 @@ class Board:
         # Represents moves with saved pieces
         if player.has_saved_pieces():
             valid_moves.extend(Move((None, None), cell, True) for cell in self.placeable_cells)
-        
+
+        player.update_controlled_cells([move.get_destination() for move in valid_moves])
+
         return np.array(valid_moves)
                 
