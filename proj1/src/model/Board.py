@@ -25,25 +25,25 @@ class Board:
     def get_board(self) -> int:
         return self.board
     
-    def get_mirror_board(self) -> int:
-        return self.board[::-1]
+    def get_mirror_board(self, board: int) -> int:
+        new_board = 0b0
+        size_total = self.size * self.size
+        for i in range(size_total):
+            stack = self.get_bitboard_stack(i, board)
+            new_board |= stack << ((size_total - i - 1) * self.stack_size * 2)
+        return new_board
     
-    def get_transpose_board(self) -> int:
-        return self.board.transpose()
+    def get_transpose_board(self, board) -> int:
+        pass
 
-    def get_transpose_mirror_board(self) -> int:
-        return self.get_mirror_board().transpose()
     
-    def get_mirror_transpose_board(self) -> int:
-        return self.get_transpose_board()[::-1]
-    
-    def get_bitboard_stack(self, bitboard_pos: int) -> int:
-        return (self.board >> (bitboard_pos * self.stack_size * 2)) & self.stack_mask
+    def get_bitboard_stack(self, bitboard_pos: int, board: int) -> int:
+        return (board >> (bitboard_pos * self.stack_size * 2)) & self.stack_mask
 
-    def get_inverse_board(self) -> int:
+    def get_inverse_board(self, board) -> int:
         new_board = 0b0
         for i in range(self.size * self.size):
-            stack = self.get_bitboard_stack(i)
+            stack = self.get_bitboard_stack(i, board)
             if(not self.is_none_stack(stack) and not self.is_empty_stack(stack)):
                 for j in range(self.stack_size):
                     piece = (stack >> (j*2)) & 0b11

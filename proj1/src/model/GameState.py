@@ -265,6 +265,7 @@ class GameState:
             has_played = self.gameController.handle_event(player)
 
         if(has_played):
+            #self.board.board = self.board.get_transpose_board(self.board.board)
             if(not self.did_win()):
                 self.next_turn()
             has_played = False
@@ -282,6 +283,14 @@ class GameState:
         # Pieces in the personal stack are more valuable than pieces on the board
         return (current_player.get_stack_count() - next_player.get_stack_count()) * 10 + len(current_player.get_cells()) - len(next_player.get_cells())
     
+    def add_to_memo(self, state: 'GameState', depth: int, value: int) -> None:
+        GameState.memo[((state.board.get_board(), (state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count())), depth)] = value
+        GameState.memo[((state.board.get_mirror_board(), (state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count())), depth)] = value
+        GameState.memo[((state.board.get_transpose_board(), (state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count())), depth)] = value
+        GameState.memo[((state.board.get_mirror_transpose_board(), (state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count())), depth)] = value
+        GameState.memo[((state.board.get_transpose_mirror_board(), (state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count())), depth)] = value
+        GameState.memo[((state.board.get_inverse_board(), (state.get_next_player().get_stack_count(), state.get_current_player().get_stack_count())), depth)] = -value
+
     def negamax(self, state: 'GameState', depth: int, alpha: int, beta: int, color: int) -> int:
         if depth == 0 or state.verify_win():
             return color * state.eval()
@@ -308,7 +317,9 @@ class GameState:
             if beta <= alpha:
                 break
         # TODO: Falta adicionar mirroring
-        GameState.memo[((state.board.get_board(), (state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count())), depth)] = maxEval
+        
+        self.add_to_memo(state, depth, maxEval)
+
         return maxEval
     
     def minimax(self, state, depth, alpha, beta, maximizingPlayer, player, opponent):
