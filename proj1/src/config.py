@@ -6,7 +6,7 @@ BOARD_SIZES =               [6,8,10,12]
 CELL_SIZE =                 {6: 70, 8: 50, 10: 50, 12: 42}
 STACK_MAX_SIZES =           {6: 3, 8: 5, 10: 5, 12: 5}
 STACK_MASKS =               {6: 0b111111, 8: 0b1111111111, 10: 0b1111111111, 12: 0b1111111111}
-MEDIUM_BOT_DEPTH =          1
+MEDIUM_BOT_DEPTH =          2
 HARD_BOT_DEPTH =            2
 
 class Config:

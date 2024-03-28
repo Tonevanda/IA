@@ -290,9 +290,9 @@ class Board:
         movable_cells = player.get_cells()
         # Represents moves with board piece
         valid_moves = [Move(tuple(int(num) for num in cell), move) 
-                    for cell in movable_cells 
-                    for move in self.get_possible_moves(tuple(int(num) for num in cell)) 
-                    if self.get_possible_moves(tuple(int(num) for num in cell)) is not None]
+               for cell in movable_cells 
+               for possible_move in [self.get_possible_moves(tuple(int(num) for num in cell))] 
+               for move in possible_move if possible_move is not None]
 
         # Represents moves with saved pieces
         if player.has_saved_pieces():
