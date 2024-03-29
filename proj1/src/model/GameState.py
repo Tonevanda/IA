@@ -4,7 +4,6 @@ from view.GameView import GameView
 from config import PIECE_ORANGE, MEDIUM_BOT_DEPTH, HARD_BOT_DEPTH, PLAYER_INT_DEPTH
 import random
 import copy
-from time import sleep
 from typing import Dict, Tuple
 from model.Move import Move
 
@@ -172,7 +171,7 @@ class GameState:
     def get_hint(self, player) -> tuple:
         best_value = float('-inf')
         best_move = None
-        
+        best_moves_list = []
         for move in self.board.get_valid_moves(player):
             new_state = self.copy()
             initial_position = move.get_origin()
@@ -188,10 +187,13 @@ class GameState:
             move_value = self.negamax(new_state, PLAYER_INT_DEPTH - 1, float('-inf'), float('inf'), 1, self.eval_hard)
             #print("Move: ", move, "Value: ", move_value)
 
-            if move_value > best_value:
+            if move_value == best_value:
+                best_moves_list.append(move)
+            elif move_value > best_value:
                 best_value = move_value
-                best_move = move
-
+                best_moves_list = [move]
+                
+        best_move = random.choice(best_moves_list)
         if(best_move.is_from_personal_stack()):
             return (None, best_move.get_destination())
         else :
@@ -217,7 +219,7 @@ class GameState:
 
         best_value = float('-inf')
         best_move = None
-        
+        best_moves_list = []
         for move in self.board.get_valid_moves(bot):
             new_state = self.copy()
             initial_position = move.get_origin()
@@ -233,10 +235,13 @@ class GameState:
             move_value = self.negamax(new_state, MEDIUM_BOT_DEPTH - 1, float('-inf'), float('inf'), 1, self.eval_medium)
             #print("Move: ", move, "Value: ", move_value)
 
-            if move_value > best_value:
+            if move_value == best_value:
+                best_moves_list.append(move)
+            elif move_value > best_value:
                 best_value = move_value
-                best_move = move
+                best_moves_list = [move]
 
+        best_move = random.choice(best_moves_list)
         if(best_move.is_from_personal_stack()):
             self.select_saved_player_stack(bot)
             self.place_saved_piece(best_move.get_destination(), bot)
@@ -247,7 +252,7 @@ class GameState:
     def handle_hard_bot(self, bot):
         best_value = float('-inf')
         best_move = None
-        
+        best_moves_list = []
         for move in self.board.get_valid_moves(bot):
             new_state = self.copy()
             initial_position = move.get_origin()
@@ -262,10 +267,13 @@ class GameState:
             
             move_value = self.negamax(new_state, HARD_BOT_DEPTH - 1, float('-inf'), float('inf'), 1, self.eval_hard)
 
-            if move_value > best_value:
+            if move_value == best_value:
+                best_moves_list.append(move)
+            elif move_value > best_value:
                 best_value = move_value
-                best_move = move
+                best_moves_list = [move]
 
+        best_move = random.choice(best_moves_list)
         if(best_move.is_from_personal_stack()):
             self.select_saved_player_stack(self.get_current_player())
             self.place_saved_piece(best_move.get_destination(), self.get_current_player())
