@@ -6,11 +6,13 @@ import random
 import copy
 from typing import Dict, Tuple
 from model.Move import Move
+from collections import defaultdict
+import hashlib
 
 class GameState:
     # Hashmap that stores, for each pair of board, and pair of player stacks, and depth, the value of the state
-    # ((board, player1_stack, player2_stack), eval_func, depth) -> value
-    memo: Dict[Tuple[Tuple[int, int, int], str, int], int] = {}
+    # ((board hash, player1_stack, player2_stack), eval_func, depth) -> value
+    memo: Dict[Tuple[Tuple[str, int, int], str, int], int] = defaultdict(int)
 
     def __init__(self, state, size, orange, blue):
         self.state = state
@@ -338,19 +340,33 @@ class GameState:
 
         return cells_difference + 2*controlled_cells_difference + stack_difference
 
+    def hash_board(self, board):
+        return hashlib.sha256(str(board).encode()).hexdigest()
 
     def add_to_memo(self, state: 'GameState', depth: int, value: int, eval_func: str) -> None:
+        current_player_stack = state.get_current_player().get_stack_count()
+        next_player_stack = state.get_next_player().get_stack_count()
+
         board = state.board.get_board()
-        GameState.memo[((board, state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count()), eval_func, depth)] = value
-        GameState.memo[((state.board.get_mirror_board(board), state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count()), eval_func, depth)] = value
-        GameState.memo[((state.board.get_inverse_board(board), state.get_next_player().get_stack_count(), state.get_current_player().get_stack_count()), eval_func, depth)] = -value
+        board_hash = self.hash_board(board)
+        GameState.memo[((board_hash, current_player_stack, next_player_stack), eval_func, depth)] = value
+
+        mirror_board = state.board.get_mirror_board(board)
+        mirror_board_hash = self.hash_board(mirror_board)
+        GameState.memo[((mirror_board_hash, current_player_stack, next_player_stack), eval_func, depth)] = value
+        
+        inverse_board = state.board.get_inverse_board(board)
+        inverse_board_hash = self.hash_board(inverse_board)
+        GameState.memo[((inverse_board_hash, next_player_stack, current_player_stack), eval_func, depth)] = -value
 
     def negamax(self, state: 'GameState', depth: int, alpha: int, beta: int, color: int, eval_func) -> int:
         if depth == 0 or state.verify_win():
             return color * eval_func(state)
         
-        if ((state.board.get_board(), state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count()), eval_func.__name__, depth) in GameState.memo:
-            return GameState.memo[((state.board.get_board(),state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count()), eval_func.__name__, depth)]
+
+        key = ((self.hash_board(state.board.get_board()), state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count()), eval_func.__name__, depth)
+        if key in GameState.memo:
+            return GameState.memo[key]
 
         maxEval = float('-inf')
         for move in state.board.get_valid_moves(state.get_current_player()):
