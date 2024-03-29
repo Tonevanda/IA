@@ -1,7 +1,7 @@
 from model.Board import Board
 from controller.GameController import GameController
 from view.GameView import GameView
-from config import PIECE_ORANGE, MEDIUM_BOT_DEPTH, HARD_BOT_DEPTH
+from config import PIECE_ORANGE, MEDIUM_BOT_DEPTH, HARD_BOT_DEPTH, PLAYER_INT_DEPTH
 import random
 import copy
 from time import sleep
@@ -168,6 +168,34 @@ class GameState:
 
     def is_bot_playing(self):
         return self.get_current_player().is_bot()
+    
+    def get_hint(self, player) -> tuple:
+        best_value = float('-inf')
+        best_move = None
+        
+        for move in self.board.get_valid_moves(player):
+            new_state = self.copy()
+            initial_position = move.get_origin()
+            destination = move.get_destination()
+            
+            if(move.is_from_personal_stack()):
+                new_state.select_saved_player_stack(new_state.get_current_player())
+                new_state.place_saved_piece(destination, new_state.get_current_player())
+            else:
+                new_state.select_cell(initial_position)
+                new_state.make_move(destination)
+            
+            move_value = self.negamax(new_state, PLAYER_INT_DEPTH - 1, float('-inf'), float('inf'), 1, self.eval_hard)
+            #print("Move: ", move, "Value: ", move_value)
+
+            if move_value > best_value:
+                best_value = move_value
+                best_move = move
+
+        if(best_move.is_from_personal_stack()):
+            return (None, best_move.get_destination())
+        else :
+            return (best_move.get_origin(), best_move.get_destination())
     
     def handle_easy_bot(self, bot):
         if bot.has_saved_pieces():
