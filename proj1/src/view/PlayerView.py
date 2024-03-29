@@ -28,6 +28,24 @@ class PlayerView:
         if self.player.stack_selected:
             pygame.draw.rect(window, (255, 255, 0), position)
 
+    def draw_lightbulb_button(self, window, position, color):
+        # Draw the button
+        pygame.draw.rect(window, color, position)
+
+        # Draw the lightbulb
+        lightbulb_radius = min(position[2], position[3]) // 3  # Increase the radius
+        lightbulb_center = (position[0] + position[2] // 2, position[1] + position[3] // 2 - lightbulb_radius // 2)
+        pygame.draw.circle(window, (255, 255, 0), lightbulb_center, lightbulb_radius)
+
+        # Draw the base of the lightbulb
+        base_height = lightbulb_radius // 2
+        base_rect = (lightbulb_center[0] - lightbulb_radius // 3, position[1] + position[3] - base_height, 2 * lightbulb_radius // 3, base_height)
+        pygame.draw.rect(window, (128, 128, 128), base_rect)
+
+        # Draw the filament
+        filament_color = (255, 69, 0)
+        pygame.draw.line(window, filament_color, (base_rect[0], base_rect[1] - base_height // 2), (base_rect[0] + base_rect[2], base_rect[1] - base_height // 2), 3)
+
     def draw(self, window):
         window_width, window_height = window.get_size()
         stack_position = (50, 50, 80, 80)
@@ -36,9 +54,15 @@ class PlayerView:
             self.draw_name(window, (20, 20), (255, 100, 0))
             self.draw_selected_stack(window, (50, 50, 80, 80))
             self.draw_stack(window, stack_position, (255, 100, 0))
+            if(not self.player.is_bot()):
+                lightbulb_button_position = (stack_position[0] + stack_position[2] + 20, stack_position[1] + 20, 60, 60)  # Increase the size and adjust the position
+                self.draw_lightbulb_button(window, lightbulb_button_position, (200, 200, 200))
         else:
             name_position = (window_width - 200, 20)
             self.draw_name(window, name_position, (50, 50, 255))
             stack_position = (window_width - 160, 50, 80, 80)
             self.draw_selected_stack(window, stack_position)
             self.draw_stack(window, stack_position, (50, 50, 255))
+            if(not self.player.is_bot()):
+                lightbulb_button_position = (stack_position[0] + stack_position[2] + 20, stack_position[1] + 20, 60, 60)  # Increase the size and adjust the position
+                self.draw_lightbulb_button(window, lightbulb_button_position, (200, 200, 200))
