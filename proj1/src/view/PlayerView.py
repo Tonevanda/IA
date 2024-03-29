@@ -37,6 +37,11 @@ class PlayerView:
         lightbulb_center = (position[0] + position[2] // 2, position[1] + position[3] // 2 - lightbulb_radius // 2)
         pygame.draw.circle(window, (255, 255, 0), lightbulb_center, lightbulb_radius)
 
+        # Draw a smaller yellow circle below the lightbulb
+        smaller_lightbulb_center = (lightbulb_center[0], lightbulb_center[1] + lightbulb_radius - lightbulb_radius // 5)
+        smaller_lightbulb_radius = lightbulb_radius // 2
+        pygame.draw.circle(window, (255, 255, 0), smaller_lightbulb_center, smaller_lightbulb_radius)
+
         # Draw the base of the lightbulb
         base_height = lightbulb_radius // 2
         base_rect = (lightbulb_center[0] - lightbulb_radius // 3, position[1] + position[3] - base_height, 2 * lightbulb_radius // 3, base_height)

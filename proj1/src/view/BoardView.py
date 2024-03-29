@@ -2,17 +2,45 @@ import pygame
 from config import PIECE_ORANGE, PIECE_BLUE
 
 class BoardView:
-    def __init__(self, board_model, starting_cell, cell_size):
+    def __init__(self, board_model, starting_cell, cell_size, orange, blue):
         self.board = board_model
         self.cell_size = cell_size
         (starting_cell_x, starting_cell_y) = starting_cell
         self.starting_cell_x = starting_cell_x
         self.starting_cell_y = starting_cell_y
+        self.orange = orange
+        self.blue = blue
 
     def update_starting_cell(self, starting_cell):
         (starting_cell_x, starting_cell_y) = starting_cell
         self.starting_cell_x = starting_cell_x
         self.starting_cell_y = starting_cell_y
+
+    def draw_hint(self, window):
+        if self.orange.hint is not None:
+            hint = self.orange.hint
+            if hint.is_from_stack():
+                pygame.draw.rect(window, (0, 255, 0), (50, 50, 80, 80))
+                destination = hint.get_destination()
+                pygame.draw.rect(window, (200, 0, 0), (self.starting_cell_x + destination[1] * self.cell_size, self.starting_cell_y + destination[0] * self.cell_size, self.cell_size, self.cell_size))
+            else:
+                origin = hint.get_origin()
+                destination = hint.get_destination()
+                pygame.draw.rect(window, (0, 255, 0), (self.starting_cell_x + origin[1] * self.cell_size, self.starting_cell_y + origin[0] * self.cell_size, self.cell_size, self.cell_size))
+                pygame.draw.rect(window, (200, 0, 0), (self.starting_cell_x + destination[1] * self.cell_size, self.starting_cell_y + destination[0] * self.cell_size, self.cell_size, self.cell_size))
+            
+        elif self.blue.hint is not None:
+            hint = self.blue.hint
+            if hint.is_from_stack():
+                pygame.draw.rect(window, (0, 255, 0), (window.get_width() - 160, 50, 80, 80))
+                destination = hint.get_destination()
+                pygame.draw.rect(window, (200, 0, 0), (self.starting_cell_x + destination[1] * self.cell_size, self.starting_cell_y + destination[0] * self.cell_size, self.cell_size, self.cell_size))
+            else:
+                origin = hint.get_origin()
+                destination = hint.get_destination()
+                pygame.draw.rect(window, (0, 255, 0), (self.starting_cell_x + origin[1] * self.cell_size, self.starting_cell_y + origin[0] * self.cell_size, self.cell_size, self.cell_size))
+                pygame.draw.rect(window, (200, 0, 0), (self.starting_cell_x + destination[1] * self.cell_size, self.starting_cell_y + destination[0] * self.cell_size, self.cell_size, self.cell_size))
+                
 
     def draw_board(self, window):
         window_width, window_height = window.get_size()

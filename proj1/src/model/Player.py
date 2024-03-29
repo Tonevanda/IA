@@ -1,5 +1,6 @@
 from config import PIECE_BLUE, PIECE_ORANGE
 import numpy as np
+from model.Move import Move
 
 class Player:
     def __init__(self, color, player_type):
@@ -9,6 +10,7 @@ class Player:
         self.stack_selected = False
         self.cells = np.empty((0, 2), int)
         self.controlled_cells = set()
+        self.hint = None
 
     # Get the cells that the player has pieces on
     def get_cells(self) -> np.ndarray:
@@ -93,6 +95,15 @@ class Player:
     # Check if the player's a hard bot
     def is_hard_bot(self) -> bool:
         return self.player_type == 'Hard Bot'
+    
+    def get_hint(self) -> 'Move':
+        return self.hint
+    
+    def set_hint(self, hint: 'Move') -> None:
+        self.hint = hint
+
+    def clear_hint(self) -> None:
+        self.hint = None
 
     # Defines the string representation of the player when printed
     def __str__(self) -> str:

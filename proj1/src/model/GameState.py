@@ -20,7 +20,7 @@ class GameState:
         self.blue = blue        # Player 2
         self.board = Board(self, size)
         self.gameController = GameController(self)
-        # TODO: Need to refactor so after every move this value is updated
+        
         self.last_move = None
 
         starting_cell = self.get_starting_cell()
@@ -170,6 +170,11 @@ class GameState:
     def is_bot_playing(self):
         return self.get_current_player().is_bot()
     
+    def handle_hint(self, player):
+        hint = self.get_hint(player)
+        player.set_hint(hint)
+        
+
     def get_hint(self, player) -> tuple:
         best_value = float('-inf')
         best_move = None
@@ -196,10 +201,7 @@ class GameState:
                 best_moves_list = [move]
                 
         best_move = random.choice(best_moves_list)
-        if(best_move.is_from_personal_stack()):
-            return (None, best_move.get_destination())
-        else :
-            return (best_move.get_origin(), best_move.get_destination())
+        return best_move
     
     def handle_easy_bot(self, bot):
         if bot.has_saved_pieces():
@@ -305,6 +307,8 @@ class GameState:
             has_played = self.gameController.handle_event(player)
 
         if(has_played):
+            if(not player.is_bot()):
+                player.clear_hint()
             if(not self.did_win()):
                 self.next_turn()
             has_played = False

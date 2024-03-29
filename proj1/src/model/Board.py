@@ -185,6 +185,9 @@ class Board:
     def get_stack_size(self, stack: int) -> int:
         return bin(stack).count("1") # Since Orange is 01 and Blue is 10, we can count the number of 1s to get the number of pieces
     
+    def is_valid_cell(self, cell: tuple) -> bool:
+        return cell in self.placeable_cells
+
     # Takes a cell and returns a list of possible moves from the corresponding cell
     def get_possible_moves(self, cell: tuple) -> list[tuple]:
         x, y = cell
