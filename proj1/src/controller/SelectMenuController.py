@@ -1,5 +1,5 @@
 import pygame
-
+from config import BOARD_SIZES
 class SelectMenuController:
     def __init__(self, select_menu_state):
         self.select_menu_state = select_menu_state
@@ -18,7 +18,7 @@ class SelectMenuController:
                     elif rect_blue.collidepoint(mouse_pos):
                         self.select_menu_state.update_selected_blue(player_type)
 
-                for i, size in enumerate([6, 8, 10, 12]):
+                for i, _ in enumerate(BOARD_SIZES):
                     rect_size = pygame.Rect(50 + i * 150, 340, 80, 80)
 
                     if rect_size.collidepoint(mouse_pos):

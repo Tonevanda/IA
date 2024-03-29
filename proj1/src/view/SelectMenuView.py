@@ -1,5 +1,5 @@
 import pygame
-
+from config import BOARD_SIZES
 class SelectMenuView:
     def __init__(self, select_menu_state):
         self.font = pygame.font.Font(None, 36)
@@ -23,7 +23,7 @@ class SelectMenuView:
 
         text = self.font.render("Select the size of the board:", 1, (10, 10, 10))
         window.blit(text, (50, 300))
-        for i, size in enumerate([6, 8, 10, 12]):
+        for i, size in enumerate(BOARD_SIZES):
             rect = pygame.Rect(50 + i * 150, 340, 80, 80)
             pygame.draw.rect(window, (100, 100, 100), rect)  # Gray box
             if i == self.select_menu_state.selected_size:  # Highlight the selected size
