@@ -19,7 +19,7 @@ class BoardView:
     def draw_hint(self, window):
         if self.orange.hint is not None:
             hint = self.orange.hint
-            if hint.is_from_stack():
+            if hint.is_from_personal_stack():
                 pygame.draw.rect(window, (0, 255, 0), (50, 50, 80, 80))
                 destination = hint.get_destination()
                 pygame.draw.rect(window, (200, 0, 0), (self.starting_cell_x + destination[1] * self.cell_size, self.starting_cell_y + destination[0] * self.cell_size, self.cell_size, self.cell_size))
@@ -31,7 +31,7 @@ class BoardView:
             
         elif self.blue.hint is not None:
             hint = self.blue.hint
-            if hint.is_from_stack():
+            if hint.is_from_personal_stack():
                 pygame.draw.rect(window, (0, 255, 0), (window.get_width() - 160, 50, 80, 80))
                 destination = hint.get_destination()
                 pygame.draw.rect(window, (200, 0, 0), (self.starting_cell_x + destination[1] * self.cell_size, self.starting_cell_y + destination[0] * self.cell_size, self.cell_size, self.cell_size))
@@ -80,4 +80,5 @@ class BoardView:
    
     def draw(self, window):
         self.draw_possible_moves(window)
+        self.draw_hint(window)
         self.draw_board(window)

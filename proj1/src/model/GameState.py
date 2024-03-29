@@ -173,7 +173,6 @@ class GameState:
     def handle_hint(self, player):
         hint = self.get_hint(player)
         player.set_hint(hint)
-        
 
     def get_hint(self, player) -> tuple:
         best_value = float('-inf')

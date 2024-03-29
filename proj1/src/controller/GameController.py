@@ -31,8 +31,10 @@ class GameController:
 
     def handle_click(self, cell, player):
         if self.clicked_saved_player_stack(player):
+            self.game_state.unselect_cell()
             self.game_state.handle_saved_player_stack_selection(player)
         elif self.clicked_player_hint(player):
+            self.game_state.unselect_cell()
             self.game_state.handle_hint(player)
         else:    
             if self.clicked_piece(cell):
