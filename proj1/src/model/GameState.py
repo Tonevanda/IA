@@ -261,7 +261,7 @@ class GameState:
             move_value = self.negamax(new_state, MEDIUM_BOT_DEPTH - 1, float('-inf'), float('inf'), 1, self.eval_medium)
             #print("Move: ", move, "Value: ", move_value)
 
-            if(move_value == 10000 + HARD_BOT_DEPTH - 1):
+            if(move_value == 10000 + MEDIUM_BOT_DEPTH - 1):
                 best_moves_list = [move]
                 best_value = move_value
                 break
@@ -310,7 +310,6 @@ class GameState:
                 best_moves_list = [move]
 
         best_move = random.choice(best_moves_list)
-        print("Best Move: ", best_move, " Value: ", best_value)
         if(best_move.is_from_personal_stack()):
             self.select_saved_player_stack(self.get_current_player())
             self.place_saved_piece(best_move.get_destination(), self.get_current_player())
@@ -330,7 +329,9 @@ class GameState:
             self.handle_hard_bot(bot)
             return True
         elif(bot.is_mcts_bot()):
+            start_time = time.time()
             self.handle_mcts_bot(bot)
+            print("Time elapsed: ", time.time() - start_time)
             return True
         return False
 
@@ -345,7 +346,6 @@ class GameState:
         if(has_played):
             if(not player.is_bot()):
                 player.clear_hint()
-
             if(not self.did_win()):
                 self.next_turn()
             has_played = False

@@ -31,9 +31,8 @@ class Node:
         return max(self.children, key=lambda child: child.ucb_score())
     
     def update(self, value) -> None:
-        self.visits += 1
         self.value += value
-        # TODO: May not be needed??
+        self.visits += 1
         if self.parent:
             self.parent.update(value)
     
@@ -49,7 +48,8 @@ class MCTS:
     
     def expand(self, node) -> None:
         legal_moves = node.state.board.get_valid_unordered_moves(node.state.get_current_player())
-        untried_moves = [move for move in legal_moves if move not in [child.state.get_last_move() for child in node.children]]
+        tried_moves = {child.state.get_last_move() for child in node.children}
+        untried_moves = [move for move in legal_moves if move not in tried_moves]
         if untried_moves:
             move = random.choice(untried_moves)
             new_state = node.state.copy()
@@ -65,12 +65,46 @@ class MCTS:
         else:
             return random.choice(node.children)
 
+    def get_good_move(self, state, moves):
+        best_value = float('-inf')
+        best_move = None
+        best_moves_list = []
+        for move in moves:
+            new_state = state.copy()
+            initial_position = move.get_origin()
+            destination = move.get_destination()
+            
+            if(move.is_from_personal_stack()):
+                new_state.select_saved_player_stack(new_state.get_current_player())
+                new_state.place_saved_piece(destination, new_state.get_current_player())
+            else:
+                new_state.select_cell(initial_position)
+                new_state.make_move(destination)
+            
+            
+            move_value = new_state.eval_medium(new_state,0)
+
+            if(move_value == 10000):
+                best_moves_list = [move]
+                best_value = move_value
+                break
+
+            if move_value == best_value:
+                best_moves_list.append(move)
+            elif move_value > best_value:
+                best_value = move_value
+                best_moves_list = [move]
+
+        best_move = random.choice(best_moves_list)
+        return best_move    
+
     def simulate(self, node) -> int:
         state = node.state.copy()
         while not state.verify_win():
             current_player = state.get_current_player()
             valid_moves = state.board.get_valid_moves(current_player)
             move = random.choice(valid_moves)
+            #move = self.get_good_move(state, valid_moves)
             if(move.is_from_personal_stack()):
                 state.select_saved_player_stack(current_player)
                 state.place_saved_piece(move.get_destination(), current_player)
