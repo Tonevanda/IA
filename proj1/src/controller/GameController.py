@@ -25,7 +25,7 @@ class GameController:
         if player.get_color() == 'Orange':
             hint = pygame.Rect(50 + 80 + 20, 50 + 20, 60, 60)
         elif player.get_color() == 'Blue':
-            hint = pygame.Rect(window_width - 160 + 80 + 20, 50 + 20, 60, 60)
+            hint = pygame.Rect(window_width - 160 - 80, 50 + 20, 60, 60)
 
         return hint.collidepoint(mouse_pos)
 
