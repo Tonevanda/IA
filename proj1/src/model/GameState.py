@@ -261,6 +261,11 @@ class GameState:
             move_value = self.negamax(new_state, MEDIUM_BOT_DEPTH - 1, float('-inf'), float('inf'), 1, self.eval_medium)
             #print("Move: ", move, "Value: ", move_value)
 
+            if(move_value == 10000 + HARD_BOT_DEPTH - 1):
+                best_moves_list = [move]
+                best_value = move_value
+                break
+
             if move_value == best_value:
                 best_moves_list.append(move)
             elif move_value > best_value:
@@ -293,6 +298,11 @@ class GameState:
             
             move_value = self.negamax(new_state, HARD_BOT_DEPTH - 1, float('-inf'), float('inf'), 1, self.eval_hard)
 
+            if(move_value == 10000 + HARD_BOT_DEPTH - 1):
+                best_moves_list = [move]
+                best_value = move_value
+                break
+
             if move_value == best_value:
                 best_moves_list.append(move)
             elif move_value > best_value:
@@ -300,6 +310,7 @@ class GameState:
                 best_moves_list = [move]
 
         best_move = random.choice(best_moves_list)
+        print("Best Move: ", best_move, " Value: ", best_value)
         if(best_move.is_from_personal_stack()):
             self.select_saved_player_stack(self.get_current_player())
             self.place_saved_piece(best_move.get_destination(), self.get_current_player())
@@ -348,7 +359,7 @@ class GameState:
 
     def eval_medium(self, state, depth) -> int:
         if state.verify_win():
-            return 1000 + depth
+            return 10000 + depth
         current_player = state.get_current_player()
         next_player = state.get_next_player()
         return current_player.get_total_pieces() - next_player.get_total_pieces()

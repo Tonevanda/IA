@@ -48,7 +48,7 @@ class MCTS:
         return current
     
     def expand(self, node) -> None:
-        legal_moves = node.state.board.get_valid_moves(node.state.get_current_player())
+        legal_moves = node.state.board.get_valid_unordered_moves(node.state.get_current_player())
         untried_moves = [move for move in legal_moves if move not in [child.state.get_last_move() for child in node.children]]
         if untried_moves:
             move = random.choice(untried_moves)
