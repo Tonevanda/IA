@@ -331,4 +331,19 @@ class Board:
         player.update_controlled_cells([move.get_destination() for move in valid_moves])
 
         return np.array(valid_moves)
-                
+    
+    def enemy_pieces_in_stack(self, stack: int, player: 'Player') -> int:
+        num_pieces = self.get_stack_size(stack)
+        enemy_pieces = 0
+        for i in range(num_pieces):
+            piece = (stack & (0b11 << (i*2))) >> (i*2)
+            if piece != player.get_color_bits():
+                enemy_pieces += 1
+        return enemy_pieces
+
+    def get_enemy_pieces_in_my_control(self, player: 'Player') -> int:
+        total = 0
+        for cell in player.get_cells():
+            stack = self.get_stack(cell)
+            total += self.enemy_pieces_in_stack(stack, player)
+        return total

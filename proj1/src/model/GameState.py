@@ -206,6 +206,7 @@ class GameState:
                 best_moves_list = [move]
                 
         best_move = random.choice(best_moves_list)
+        print("Hinted Move: ", best_move, " Value: ", best_value)
         return best_move
     
     def handle_easy_bot(self, bot):
@@ -316,6 +317,7 @@ class GameState:
         if(has_played):
             if(not player.is_bot()):
                 player.clear_hint()
+
             if(not self.did_win()):
                 self.next_turn()
             has_played = False
@@ -332,7 +334,7 @@ class GameState:
             return 1000 + depth
         current_player = state.get_current_player()
         next_player = state.get_next_player()
-        return len(current_player.get_cells()) - len(next_player.get_cells())
+        return urrent_player.get_total_pieces() - next_player.get_total_pieces()
     
     # TODO: Implement a better evaluation function
     # 1. Quantos espaços está a controlar na board (quantos mais melhor)
@@ -351,13 +353,13 @@ class GameState:
         
         cells_difference = len(current_player.get_cells()) - len(next_player.get_cells())
         controlled_cells_difference = len(current_player.get_controlled_cells()) - len(next_player.get_controlled_cells())
-        stack_difference = current_player.get_stack_count() - next_player.get_stack_count()
+        #stack_difference = current_player.get_stack_count() - next_player.get_stack_count()
 
-        hidden_enemy_pieces = next_player.get_total_pieces() - len(next_player.get_cells()) - next_player.get_stack_count() # Heuristic, porque se o inimigo tiver uma stack com 3 dele, essas contarão como hidden
+        hidden_enemy_pieces = state.board.get_enemy_pieces_in_my_control(current_player)
 
-        total_pieces_difference = current_player.get_total_pieces() - next_player.get_total_pieces()
+        total_pieces_difference = current_player.get_total_pieces() - next_player.get_total_pieces() # Já leva em conta a stack difference
 
-        return cells_difference + 2*controlled_cells_difference + stack_difference + 3*total_pieces_difference + hidden_enemy_pieces
+        return cells_difference + controlled_cells_difference + 5*total_pieces_difference + 4*hidden_enemy_pieces
 
     def hash_board(self, board):
         return hashlib.sha256(str(board).encode()).hexdigest()
