@@ -1,7 +1,7 @@
 import math
 import random
-from model.GameState import GameState
-
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
 class Node:
     def __init__(self, state, parent=None) -> None:
         self.state = state
@@ -44,36 +44,68 @@ class MCTS:
 
     def select_node_to_expand(self) -> Node:
         current = self.root
-        while not current.state.is_terminal() and current.is_fully_expanded():
+        while not current.is_terminal() and current.is_fully_expanded():
             current = current.select_child()
         return current
     
     def expand(self, node) -> None:
-        legal_moves = node.state.get_current_player().get_tuple_cells()
+        legal_moves = node.state.board.get_valid_moves(node.state.get_current_player())
         untried_moves = [move for move in legal_moves if move not in [child.state.get_last_move() for child in node.children]]
         if untried_moves:
             move = random.choice(untried_moves)
             new_state = node.state.copy()
-            new_state.select_cell(move.get_origin())
-            new_state.make_move(move.get_destination())
+            current_player = new_state.get_current_player()
+            if(move.is_from_personal_stack()):
+                new_state.select_saved_player_stack(current_player)
+                new_state.place_saved_piece(move.get_destination(), current_player)
+            else:
+                new_state.select_cell(move.get_origin())
+                new_state.make_move(move.get_destination())
+            new_state.unselect_cell()
             return node.add_child(new_state)
         else:
             return random.choice(node.children)
 
     def simulate(self, node) -> int:
         state = node.state.copy()
-        while not state.is_terminal():
-            move = random.choice(state.get_current_player().get_tuple_cells())
-            state.select_cell(move.get_origin())
-            state.make_move(move.get_destination())
+        while not state.verify_win():
+            current_player = state.get_current_player()
+            valid_moves = state.board.get_valid_moves(current_player)
+            move = random.choice(valid_moves)
+            print("Thread num: ", threading.current_thread().name)
+            if(move.is_from_personal_stack()):
+                state.select_saved_player_stack(current_player)
+                state.place_saved_piece(move.get_destination(), current_player)
+            else:
+                state.select_cell(move.get_origin())
+                state.make_move(move.get_destination())
+            state.unselect_cell()
+
+            if(state.verify_win()):
+                break
+            state.next_turn()
 
         # If the state is terminal, return who won
-        return state.get_current_player()
+        return 1 if state.get_current_player() == self.root.state.get_current_player() else -1
     
     def backpropagate(self, node, value) -> None:
         while node is not None:
             node.update(value)
             node = node.parent
+
+    def run_iteration(self):
+        node = self.select_node_to_expand()
+        leaf = self.expand(node)
+        simulation_result = self.simulate(leaf)
+        return leaf, simulation_result
+
+    #def search(self, num_iterations=1000) -> Node:
+    #    with ThreadPoolExecutor() as executor:
+    #        futures = [executor.submit(self.run_iteration) for _ in range(num_iterations)]
+    #        for future in as_completed(futures):
+    #            leaf, simulation_result = future.result()
+    #            self.backpropagate(leaf, simulation_result)
+    #    return max(self.root.children, key=lambda child: child.value / child.visits)
     
     def search(self, num_iterations=1000) -> Node:
         for _ in range(num_iterations):

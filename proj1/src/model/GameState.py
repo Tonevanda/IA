@@ -9,6 +9,8 @@ from model.Move import Move
 from collections import defaultdict
 import hashlib
 
+from model.MCTS import MCTS
+
 class GameState:
     # Hashmap that stores, for each pair of board, and pair of player stacks, and depth, the value of the state
     # ((board hash, player1_stack, player2_stack), eval_func, depth) -> value
@@ -210,6 +212,18 @@ class GameState:
         print("Hinted Move: ", best_move, " Value: ", best_value)
         return best_move
     
+    def handle_mcts_bot(self, bot):
+        mcts = MCTS(self.copy())
+        best_node = mcts.search(num_iterations=50)
+
+        best_move = best_node.state.get_last_move()
+        if best_move.is_from_personal_stack():
+            self.select_saved_player_stack(bot)
+            self.place_saved_piece(best_move.get_destination(), bot)
+        else:
+            self.select_cell(best_move.get_origin())
+            self.make_move(best_move.get_destination())
+
     def handle_easy_bot(self, bot):
         if bot.has_saved_pieces():
             self.select_saved_player_stack(bot)
@@ -295,7 +309,8 @@ class GameState:
     def handle_bot(self, bot):
         if(bot.is_easy_bot()):
             #sleep(0.2)
-            self.handle_easy_bot(bot)
+            #self.handle_easy_bot(bot)
+            self.handle_mcts_bot(bot)
             return True
         elif(bot.is_medium_bot()):
             self.handle_medium_bot(bot)
