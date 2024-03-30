@@ -1,5 +1,6 @@
-import pygame
 from config import BOARD_SIZES
+import pygame
+
 class SelectMenuView:
     def __init__(self, select_menu_state):
         self.font = pygame.font.Font(None, 36)

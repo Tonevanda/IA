@@ -1,5 +1,5 @@
-import pygame
 from config import PIECE_ORANGE, PIECE_BLUE
+import pygame
 
 class BoardView:
     def __init__(self, board_model, starting_cell, cell_size, orange, blue):

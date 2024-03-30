@@ -1,7 +1,7 @@
 from config import PIECE_BLUE, PIECE_ORANGE, PIECE_EMPTY, STACK_MASKS, STACK_MAX_SIZES
-import random
 from model.Move import Move
 from model.Player import Player
+import random
 import numpy as np
 
 class Board:

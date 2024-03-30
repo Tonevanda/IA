@@ -1,6 +1,6 @@
 from config import PIECE_BLUE, PIECE_ORANGE
-import numpy as np
 from model.Move import Move
+import numpy as np
 
 class Player:
     def __init__(self, color, player_type):

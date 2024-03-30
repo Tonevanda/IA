@@ -1,16 +1,16 @@
 from model.Board import Board
+from model.MCTS import MCTS
+from model.Move import Move
 from controller.GameController import GameController
 from view.GameView import GameView
 from config import PIECE_ORANGE, MEDIUM_BOT_DEPTH, HARD_BOT_DEPTH, PLAYER_INT_DEPTH, MCTS_ITERATIONS
+from typing import Dict
+from collections import defaultdict
 import random
 import copy
-from typing import Dict, Tuple
-from model.Move import Move
-from collections import defaultdict
 import hashlib
 import time
 
-from model.MCTS import MCTS
 
 class GameState:
     # Hashmap that stores, for each pair of board, and pair of player stacks, and depth, the value of the state
