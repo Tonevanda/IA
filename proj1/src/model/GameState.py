@@ -1,7 +1,7 @@
 from model.Board import Board
 from controller.GameController import GameController
 from view.GameView import GameView
-from config import PIECE_ORANGE, MEDIUM_BOT_DEPTH, HARD_BOT_DEPTH, PLAYER_INT_DEPTH
+from config import PIECE_ORANGE, MEDIUM_BOT_DEPTH, HARD_BOT_DEPTH, PLAYER_INT_DEPTH, MCTS_ITERATIONS
 import random
 import copy
 from typing import Dict, Tuple
@@ -215,9 +215,7 @@ class GameState:
     
     def handle_mcts_bot(self, bot):
         mcts = MCTS(self.copy())
-        start_time = time.time()
-        best_node = mcts.search(num_iterations=100)
-        print("Time taken: ", time.time() - start_time)
+        best_node = mcts.search(num_iterations=MCTS_ITERATIONS)
 
         best_move = best_node.state.get_last_move()
         if best_move.is_from_personal_stack():
@@ -312,14 +310,16 @@ class GameState:
     def handle_bot(self, bot):
         if(bot.is_easy_bot()):
             #sleep(0.2)
-            #self.handle_easy_bot(bot)
-            self.handle_mcts_bot(bot)
+            self.handle_easy_bot(bot)
             return True
         elif(bot.is_medium_bot()):
             self.handle_medium_bot(bot)
             return True
         elif(bot.is_hard_bot()):
             self.handle_hard_bot(bot)
+            return True
+        elif(bot.is_mcts_bot()):
+            self.handle_mcts_bot(bot)
             return True
         return False
 

@@ -83,7 +83,7 @@ class Player:
 
     # Check if the player's a bot
     def is_bot(self) -> bool:
-        return self.player_type == 'Easy Bot' or self.player_type == 'Hard Bot' or self.player_type == 'Medium Bot'
+        return self.player_type == 'Easy Bot' or self.player_type == 'Hard Bot' or self.player_type == 'Medium Bot' or self.player_type == 'MCTS Bot'
 
     # Check if the player's an easy bot
     def is_easy_bot(self) -> bool:
@@ -96,6 +96,9 @@ class Player:
     # Check if the player's a hard bot
     def is_hard_bot(self) -> bool:
         return self.player_type == 'Hard Bot'
+    
+    def is_mcts_bot(self) -> bool:
+        return self.player_type == 'MCTS Bot'
     
     def get_hint(self) -> 'Move':
         return self.hint

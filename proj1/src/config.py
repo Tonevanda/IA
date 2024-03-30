@@ -9,6 +9,7 @@ STACK_MASKS =               {4: 0b1111, 6: 0b111111, 8: 0b1111111111, 10: 0b1111
 MEDIUM_BOT_DEPTH =          2
 HARD_BOT_DEPTH =            3
 PLAYER_INT_DEPTH =          3
+MCTS_ITERATIONS =           100
 
 class Config:
     def __init__(self) -> None:

@@ -6,7 +6,7 @@ from config import *
 class SelectMenuState:
     def __init__(self, state_manager):
         self.state_manager = state_manager
-        self.player_types = ["Player", "Easy Bot", "Medium Bot", "Hard Bot"]
+        self.player_types = ["Player", "Easy Bot", "Medium Bot", "Hard Bot", "MCTS Bot"]
         self.selected_orange = 0    # Index of the currently selected player 1 (orange)
         self.selected_blue = 0      # Index of the currently selected player 2 (blue)
         self.selected_size = 1
@@ -26,6 +26,8 @@ class SelectMenuState:
                 self.selected_orange = 2
             case "Hard Bot":
                 self.selected_orange = 3
+            case "MCTS Bot":
+                self.selected_orange = 4
     
     def update_selected_blue(self, player):
         match player:
@@ -37,6 +39,8 @@ class SelectMenuState:
                 self.selected_blue = 2
             case "Hard Bot":
                 self.selected_blue = 3
+            case "MCTS Bot":
+                self.selected_blue = 4
     
     def update_selected_size(self, size):
         self.selected_size = size
