@@ -60,14 +60,14 @@ class PlayerView:
             self.draw_selected_stack(window, (50, 50, 80, 80))
             self.draw_stack(window, stack_position, (255, 100, 0))
             if(not self.player.is_bot()):
-                lightbulb_button_position = (stack_position[0] + stack_position[2] + 20, stack_position[1] + 20, 60, 60)  # Increase the size and adjust the position
+                lightbulb_button_position = (stack_position[0] + stack_position[2] + 10, stack_position[1] + 20, 60, 60)
                 self.draw_lightbulb_button(window, lightbulb_button_position, (200, 200, 200))
         else:
-            name_position = (window_width - 200, 20)
+            name_position = (window_width - 220, 20)
             self.draw_name(window, name_position, (50, 50, 255))
             stack_position = (window_width - 160, 50, 80, 80)
             self.draw_selected_stack(window, stack_position)
             self.draw_stack(window, stack_position, (50, 50, 255))
             if(not self.player.is_bot()):
-                lightbulb_button_position = (stack_position[0] + stack_position[2] + 20, stack_position[1] + 20, 60, 60)  # Increase the size and adjust the position
+                lightbulb_button_position = (stack_position[0] - 70, stack_position[1] + 20, 60, 60) 
                 self.draw_lightbulb_button(window, lightbulb_button_position, (200, 200, 200))
