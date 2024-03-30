@@ -8,6 +8,7 @@ from typing import Dict, Tuple
 from model.Move import Move
 from collections import defaultdict
 import hashlib
+import time
 
 from model.MCTS import MCTS
 
@@ -214,7 +215,9 @@ class GameState:
     
     def handle_mcts_bot(self, bot):
         mcts = MCTS(self.copy())
-        best_node = mcts.search(num_iterations=50)
+        start_time = time.time()
+        best_node = mcts.search(num_iterations=100)
+        print("Time taken: ", time.time() - start_time)
 
         best_move = best_node.state.get_last_move()
         if best_move.is_from_personal_stack():

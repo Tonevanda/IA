@@ -1,7 +1,6 @@
 import math
 import random
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import threading
+
 class Node:
     def __init__(self, state, parent=None) -> None:
         self.state = state
@@ -72,7 +71,6 @@ class MCTS:
             current_player = state.get_current_player()
             valid_moves = state.board.get_valid_moves(current_player)
             move = random.choice(valid_moves)
-            print("Thread num: ", threading.current_thread().name)
             if(move.is_from_personal_stack()):
                 state.select_saved_player_stack(current_player)
                 state.place_saved_piece(move.get_destination(), current_player)
@@ -92,20 +90,6 @@ class MCTS:
         while node is not None:
             node.update(value)
             node = node.parent
-
-    def run_iteration(self):
-        node = self.select_node_to_expand()
-        leaf = self.expand(node)
-        simulation_result = self.simulate(leaf)
-        return leaf, simulation_result
-
-    #def search(self, num_iterations=1000) -> Node:
-    #    with ThreadPoolExecutor() as executor:
-    #        futures = [executor.submit(self.run_iteration) for _ in range(num_iterations)]
-    #        for future in as_completed(futures):
-    #            leaf, simulation_result = future.result()
-    #            self.backpropagate(leaf, simulation_result)
-    #    return max(self.root.children, key=lambda child: child.value / child.visits)
     
     def search(self, num_iterations=1000) -> Node:
         for _ in range(num_iterations):
@@ -113,3 +97,4 @@ class MCTS:
             leaf = self.expand(node)
             simulation_result = self.simulate(leaf)
             self.backpropagate(leaf, simulation_result)
+        return max(self.root.children, key=lambda child: child.value / child.visits)
