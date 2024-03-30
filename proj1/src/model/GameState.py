@@ -334,7 +334,7 @@ class GameState:
             return 1000 + depth
         current_player = state.get_current_player()
         next_player = state.get_next_player()
-        return urrent_player.get_total_pieces() - next_player.get_total_pieces()
+        return current_player.get_total_pieces() - next_player.get_total_pieces()
     
     # TODO: Implement a better evaluation function
     # 1. Quantos espaços está a controlar na board (quantos mais melhor)
