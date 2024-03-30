@@ -347,3 +347,45 @@ class Board:
             stack = self.get_stack(cell)
             total += self.enemy_pieces_in_stack(stack, player)
         return total
+
+    def get_valid_destinations(self, player, movable_cells) -> np.ndarray:
+        # Represents moves with board piece
+        valid_destinations = [move
+            for cell in movable_cells 
+            for possible_move in [self.get_possible_moves(tuple(int(num) for num in cell))] 
+            for move in possible_move if possible_move is not None]
+
+        # Represents moves with saved pieces
+        if player.has_saved_pieces():
+            valid_destinations.extend(cell for cell in self.placeable_cells)
+
+        return np.array(valid_destinations)
+
+    def eval_board(self, player: 'Player', opponent: 'Player') -> int:
+        total = 0
+        opponent_cells = opponent.get_cells()
+        player_cells = player.get_cells()
+        opponent_destinations = self.get_valid_destinations(opponent, opponent_cells)
+
+        for cell in player_cells:
+            stack = self.get_stack(cell)
+            total += self.enemy_pieces_in_stack(stack, player) # Enemy pieces in my control
+            if cell in opponent_destinations: # If the opponent can move to my cell and take my pieces (bad)
+                total -= 5
+                if(self.get_stack_size(stack) == self.stack_size): # If the stack is full it's an even worse position
+                    total -= 5
+                total += 2 * self.get_stack_size(stack)
+
+        player_destinations = self.get_valid_destinations(player, player_cells)
+
+        for cell in opponent_cells:
+            stack = self.get_stack(cell)
+            total -= self.enemy_pieces_in_stack(stack, opponent)
+            if cell in player_destinations: # Pieces that can see each other are bad for the player, because it will be the opponent turn and they can take the pieces
+                total += 4
+                if(self.get_stack_size(stack) == self.stack_size):
+                    total += 4
+                total -= 2 * self.get_stack_size(stack)
+            
+        return total
+            
