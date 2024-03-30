@@ -8,13 +8,13 @@ class Player:
         self.stack_pieces = 0
         self.player_type = player_type
         self.stack_selected = False
-        self.cells = np.empty((0, 2), int)
+        self.cells = set()
         self.controlled_cells = set()
         self.hint = None
         self.total_pieces = 0
 
     # Get the cells that the player has pieces on
-    def get_cells(self) -> np.ndarray:
+    def get_cells(self) -> set:
         return self.cells
     
     # Get the cells that the player has pieces on as a list of tuples
@@ -23,15 +23,13 @@ class Player:
     
     # Add a cell to the player's cells
     def add_cell(self, cell: tuple) -> None:
-        cell = np.array(cell)  # Convert cell to a numpy array (i.e. (1,2) -> [1 2])
-        if not any(np.array_equal(cell, existing_cell) for existing_cell in self.cells): # If the cell is not already in the player's cells
-            self.cells = np.append(self.cells, [cell], axis=0) # Add the cell to the player's cells
+        if cell not in self.cells:  # If the cell is not already in the player's cells
+            self.cells.add(cell)  # Add the cell to the player's cells
 
     def remove_cell(self, cell: tuple) -> None:
-        cell = np.array(cell) # Convert cell to a numpy array (i.e. (1,2) -> [1 2])
-        self.cells = np.array([existing_cell for existing_cell in self.cells if not np.array_equal(cell, existing_cell)]) # Remove the cell from the player's cells
-        if(self.cells.size == 0):
-            self.cells = np.empty((0, 2), int)
+        self.cells.discard(cell)  # Remove the cell from the player's cells using the discard method
+        if not self.cells:  # If the set is empty
+            self.cells = set()  # Reinitialize the set to an empty set
 
     def get_controlled_cells(self) -> set:
         return self.controlled_cells
