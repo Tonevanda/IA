@@ -353,7 +353,7 @@ class GameState:
         controlled_cells_difference = len(current_player.get_controlled_cells()) - len(next_player.get_controlled_cells())
         stack_difference = current_player.get_stack_count() - next_player.get_stack_count()
 
-        hidden_enemy_pieces = next_player.get_total_pieces() - len(next_player.get_cells()) - next_player.get_stack_count()
+        hidden_enemy_pieces = next_player.get_total_pieces() - len(next_player.get_cells()) - next_player.get_stack_count() # Heuristic, porque se o inimigo tiver uma stack com 3 dele, essas contarão como hidden
 
         total_pieces_difference = current_player.get_total_pieces() - next_player.get_total_pieces()
 
