@@ -11,6 +11,7 @@ class Player:
         self.cells = np.empty((0, 2), int)
         self.controlled_cells = set()
         self.hint = None
+        self.total_pieces = 0
 
     # Get the cells that the player has pieces on
     def get_cells(self) -> np.ndarray:
@@ -104,6 +105,15 @@ class Player:
 
     def clear_hint(self) -> None:
         self.hint = None
+
+    def get_total_pieces(self) -> int:
+        return self.total_pieces
+    
+    def add_piece(self) -> None:
+        self.total_pieces += 1
+    
+    def remove_piece(self) -> None:
+        self.total_pieces -= 1
 
     # Defines the string representation of the player when printed
     def __str__(self) -> str:

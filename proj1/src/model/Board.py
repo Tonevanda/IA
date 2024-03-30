@@ -238,6 +238,8 @@ class Board:
             piece = removed_pieces & (0b11 << (i*2)) # Get the piece removed
             if piece == self.game_state.get_current_player().get_color_bits(): # If the piece removed is from the current player
                 self.game_state.add_to_player_stack() # Add the piece to the current player's stack
+            else:
+                self.game_state.remove_piece(self.game_state.get_next_player())
 
     # Handles the stack size limit by removing the pieces that exceed the limit
     def handle_stack_size_limit(self, stack: int, bitmap_position: int) -> None:

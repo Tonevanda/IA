@@ -12,6 +12,7 @@ import hashlib
 class GameState:
     # Hashmap that stores, for each pair of board, and pair of player stacks, and depth, the value of the state
     # ((board hash, player1_stack, player2_stack), eval_func, depth) -> value
+    # TODO: Could be a hash of the whole state (hash256 has 2^256 so probability of collisions is low and it is better and more efficient)
     memo: Dict[Tuple[Tuple[str, int, int], str, int], int] = defaultdict(int)
 
     def __init__(self, state, size, orange, blue):
@@ -100,14 +101,19 @@ class GameState:
     def add_to_player_cells_color(self, cell, color):
         if color == PIECE_ORANGE:
             self.orange.add_cell(cell)
+            self.orange.add_piece()
         else:
             self.blue.add_cell(cell)
+            self.blue.add_piece()
     
     def add_to_player_cells(self, cell, player):
         player.add_cell(cell)
 
     def remove_from_player_cells(self, cell, player):
         player.remove_cell(cell)
+
+    def remove_piece(self, player):
+        player.remove_piece()
     
     def unselect_cell(self):
         self.board.current_possible_moves = None
@@ -269,6 +275,7 @@ class GameState:
                 new_state.make_move(destination)
             
             move_value = self.negamax(new_state, HARD_BOT_DEPTH - 1, float('-inf'), float('inf'), 1, self.eval_hard)
+            print("Move: ", move, " Value: ", move_value)
 
             if move_value == best_value:
                 best_moves_list.append(move)
@@ -277,6 +284,7 @@ class GameState:
                 best_moves_list = [move]
 
         best_move = random.choice(best_moves_list)
+        print("Best Move: ", best_move, " Value: ", best_value)
         if(best_move.is_from_personal_stack()):
             self.select_saved_player_stack(self.get_current_player())
             self.place_saved_piece(best_move.get_destination(), self.get_current_player())
@@ -319,11 +327,11 @@ class GameState:
     def to_quit(self):
         self.state.to_quit()
 
-    def eval_medium(self, state) -> int:
+    def eval_medium(self, state, depth) -> int:
+        if state.verify_win():
+            return 1000 + depth
         current_player = state.get_current_player()
         next_player = state.get_next_player()
-        if state.verify_win():
-            return 1000
         return len(current_player.get_cells()) - len(next_player.get_cells())
     
     # TODO: Implement a better evaluation function
@@ -331,17 +339,25 @@ class GameState:
     # 2. Quantos espaços tem na board (quantos mais melhor)
     # 3. Quantas peças tem no total (quantas mais melhor)
     # 4. Quantas peças tem na stack pessoal (quantas mais melhor)
-    def eval_hard(self, state) -> int:
+    # TODO: 5. Verificar se estou a "vigiar" uma peça do adversário. Será ainda melhor se eu o conseguir ver e ele não me conseguir ver a mim
+    # 6. Quantas peças do inimigo "escondeu"
+    def eval_hard(self, state, depth) -> int:
+        if state.verify_win():
+            return 10000 + depth
+        
         current_player = state.get_current_player()
         next_player = state.get_next_player()
-        if state.verify_win():
-            return 1000
+        
+        
         cells_difference = len(current_player.get_cells()) - len(next_player.get_cells())
         controlled_cells_difference = len(current_player.get_controlled_cells()) - len(next_player.get_controlled_cells())
         stack_difference = current_player.get_stack_count() - next_player.get_stack_count()
 
+        hidden_enemy_pieces = next_player.get_total_pieces() - len(next_player.get_cells()) - next_player.get_stack_count()
 
-        return cells_difference + 2*controlled_cells_difference + stack_difference
+        total_pieces_difference = current_player.get_total_pieces() - next_player.get_total_pieces()
+
+        return cells_difference + 2*controlled_cells_difference + stack_difference + 3*total_pieces_difference + hidden_enemy_pieces
 
     def hash_board(self, board):
         return hashlib.sha256(str(board).encode()).hexdigest()
@@ -364,7 +380,7 @@ class GameState:
 
     def negamax(self, state: 'GameState', depth: int, alpha: int, beta: int, color: int, eval_func) -> int:
         if depth == 0 or state.verify_win():
-            return color * eval_func(state)
+            return color * eval_func(state, depth)
         
 
         key = ((self.hash_board(state.board.get_board()), state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count()), eval_func.__name__, depth)
