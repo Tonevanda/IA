@@ -94,8 +94,8 @@ class GameState:
             print("States evaluated: ", GameState.states_evaluated)
             print("States avoided: ", GameState.states_avoided)
             print("Total branches pruned: ", GameState.branches_pruned_total)
-            self.branches_pruned_total = 0
-            self.branches_pruned_move
+            GameState.branches_pruned_total = 0
+            GameState.branches_pruned_move = 0
             return True
         return False
 
@@ -352,8 +352,8 @@ class GameState:
             start = time.time()
             has_played = self.handle_bot(player)
             print(f"{self.get_current_player()} took {time.time() - start} seconds to make a move!")
-            print(f"Branched pruned: {GameState.branches_pruned_move}")
-            self.branches_pruned_move = 0
+            print(f"Branched pruned this move: {GameState.branches_pruned_move}")
+            GameState.branches_pruned_move = 0
             print("\n")
         else:
             has_played = self.gameController.handle_event(player)
