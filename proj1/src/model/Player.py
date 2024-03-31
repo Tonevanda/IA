@@ -23,13 +23,10 @@ class Player:
     
     # Add a cell to the player's cells
     def add_cell(self, cell: tuple) -> None:
-        if cell not in self.cells:  # If the cell is not already in the player's cells
-            self.cells.add(cell)  # Add the cell to the player's cells
+        self.cells.add(cell)  # Add the cell to the player's cells
 
     def remove_cell(self, cell: tuple) -> None:
         self.cells.discard(cell)  # Remove the cell from the player's cells using the discard method
-        if not self.cells:  # If the set is empty
-            self.cells = set()  # Reinitialize the set to an empty set
 
     def get_controlled_cells(self) -> set:
         return self.controlled_cells
