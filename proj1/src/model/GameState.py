@@ -271,7 +271,7 @@ class GameState:
         destination = best_move.get_destination()
 
         if(best_move.is_from_personal_stack()):
-            self.select_saved_player_stack(self.get_current_player)
+            self.select_saved_player_stack(self.get_current_player())
             self.place_saved_piece(destination, self.get_current_player())
         else:
             self.select_cell(initial_position)
