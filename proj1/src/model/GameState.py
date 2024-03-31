@@ -18,6 +18,10 @@ class GameState:
     # TODO: Could be a hash of the whole state (hash256 has 2^256 so probability of collisions is low and it is better and more efficient)
     #memo: Dict[Tuple[Tuple[str, int, int], str, int], int] = defaultdict(int)
     memo: Dict[str, int] = defaultdict(int)
+    states_evaluated = 0
+    states_avoided = 0
+    branches_pruned_total = 0
+    branches_pruned_move = 0
 
     def __init__(self, state, size, orange, blue):
         self.state = state
@@ -87,6 +91,11 @@ class GameState:
         if self.verify_win():
             winner = self.get_current_player()
             self.state.to_end(winner)
+            print("States evaluated: ", GameState.states_evaluated)
+            print("States avoided: ", GameState.states_avoided)
+            print("Total branches pruned: ", GameState.branches_pruned_total)
+            self.branches_pruned_total = 0
+            self.branches_pruned_move
             return True
         return False
 
@@ -339,7 +348,13 @@ class GameState:
         player = self.get_current_player()
         has_played = False
         if player.is_bot():
+            print(f"------------------- {player} is playing (Turn {self.turn}) -------------------")
+            start = time.time()
             has_played = self.handle_bot(player)
+            print(f"{self.get_current_player()} took {time.time() - start} seconds to make a move!")
+            print(f"Branched pruned: {GameState.branches_pruned_move}")
+            self.branches_pruned_move = 0
+            print("\n")
         else:
             has_played = self.gameController.handle_event(player)
 
@@ -374,13 +389,10 @@ class GameState:
     def eval_hard(self, state, depth) -> int:
         if state.verify_win():
             return 10000 + depth
-        
+
         current_player = state.get_current_player()
         next_player = state.get_next_player()
-        
-        current_player_cells = current_player.get_cells()
-        next_player_cells = next_player.get_cells()
-        
+
         cells_difference = len(current_player.get_cells()) - len(next_player.get_cells())
         controlled_cells_difference = len(current_player.get_controlled_cells()) - len(next_player.get_controlled_cells())
         stack_difference = current_player.get_stack_count() - next_player.get_stack_count() # Apesar de já estar a ser levada em conta, uma peça guardada é relevante
@@ -408,7 +420,7 @@ class GameState:
         mirror_key = str((mirror_board, next_player_stack, current_player_stack, eval_func, depth))
         mirror_key_hash = hashlib.sha256(mirror_key.encode()).hexdigest()
         GameState.memo[mirror_key_hash] = value
-        
+
         inverse_board = state.board.get_inverse_board(board)
         #inverse_board_hash = self.hash_board(inverse_board)
         inverse_key = str((inverse_board, next_player_stack, current_player_stack, eval_func, depth))
@@ -418,12 +430,13 @@ class GameState:
     def negamax(self, state: 'GameState', depth: int, alpha: int, beta: int, color: int, eval_func) -> int:
         if depth == 0 or state.verify_win():
             return color * eval_func(state, depth)
-        
 
+        GameState.states_evaluated += 1
         key = str((state.board.get_board(), state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count(), eval_func.__name__, depth))
         key_hash = hashlib.sha256(key.encode()).hexdigest()
         #print(str(key_hash))
         if key_hash in GameState.memo:
+            GameState.states_avoided += 1
             return GameState.memo[key_hash]
 
         maxEval = float('-inf')
@@ -443,6 +456,8 @@ class GameState:
             maxEval = max(maxEval, eval)
             alpha = max(alpha, eval)
             if beta <= alpha:
+                GameState.branches_pruned_total += 1
+                GameState.branches_pruned_move += 1
                 break
         
         self.add_to_memo(state, depth, maxEval, eval_func.__name__)
