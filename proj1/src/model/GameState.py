@@ -199,8 +199,11 @@ class GameState:
         state = self.copy()
         best_value, best_move = self.negamax(state, PLAYER_HINT_DEPTH, float('-inf'), float('inf'), 1, self.eval_hard)
 
-        initial_position = best_move.get_origin()
-        destination = best_move.get_destination()
+        if best_move != None:
+            initial_position = best_move.get_origin()
+            destination = best_move.get_destination()
+        else:
+            best_move = self.board.get_valid_moves(self.get_current_player())[0]
 
         return best_move
     
@@ -235,29 +238,34 @@ class GameState:
         state = self.copy()
         best_value, best_move = self.negamax(state, MEDIUM_BOT_DEPTH, float('-inf'), float('inf'), 1, self.eval_medium)
 
-        initial_position = best_move.get_origin()
-        destination = best_move.get_destination()
-
-        if(best_move.is_from_personal_stack()):
-            self.select_saved_player_stack(self.get_current_player())
-            self.place_saved_piece(destination, self.get_current_player())
+        if best_move != None:
+            initial_position = best_move.get_origin()
+            destination = best_move.get_destination()
+            if(best_move.is_from_personal_stack()):
+                self.select_saved_player_stack(self.get_current_player())
+                self.place_saved_piece(destination, self.get_current_player())
+            else:
+                self.select_cell(initial_position)
+                self.make_move(destination)
         else:
-            self.select_cell(initial_position)
-            self.make_move(destination)
+            self.handle_easy_bot(bot)
 
     def handle_hard_bot(self, bot):
         state = self.copy()
         best_value, best_move = self.negamax(state, HARD_BOT_DEPTH, float('-inf'), float('inf'), 1, self.eval_hard)
 
-        initial_position = best_move.get_origin()
-        destination = best_move.get_destination()
+        if best_move != None:
+            initial_position = best_move.get_origin()
+            destination = best_move.get_destination()
 
-        if(best_move.is_from_personal_stack()):
-            self.select_saved_player_stack(self.get_current_player())
-            self.place_saved_piece(destination, self.get_current_player())
+            if(best_move.is_from_personal_stack()):
+                self.select_saved_player_stack(self.get_current_player())
+                self.place_saved_piece(destination, self.get_current_player())
+            else:
+                self.select_cell(initial_position)
+                self.make_move(destination)
         else:
-            self.select_cell(initial_position)
-            self.make_move(destination)
+            self.handle_easy_bot(bot)
             
     def handle_bot(self, bot):
         if(bot.is_easy_bot()):
@@ -339,18 +347,22 @@ class GameState:
         return cells_difference + controlled_cells_difference + 5*total_pieces_difference + 4*hidden_enemy_pieces + stack_difference
 
     def add_to_memo(self, state: 'GameState', depth: int, value: int, eval_func: str) -> None:
-        current_player_stack = state.get_current_player().get_stack_count()
-        next_player_stack = state.get_next_player().get_stack_count()
+        current_player = state.get_current_player()
+        next_player = state.get_next_player()
 
         board = state.board.get_board()
         #board_hash = self.hash_board(board)
-        key = str((board, current_player_stack, next_player_stack, eval_func, depth))
+        key = str((board, current_player, next_player, eval_func, depth))
         key_hash = hashlib.sha256(key.encode()).hexdigest()
         GameState.memo[key_hash] = value
 
+        opponent_key = str((board, next_player, current_player, eval_func, depth))
+        opponent_key_hash = hashlib.sha256(opponent_key.encode()).hexdigest()
+        GameState.memo[opponent_key_hash] = -value
+
         mirror_board = state.board.get_mirror_board(board)
         #mirror_board_hash = self.hash_board(mirror_board)
-        mirror_key = str((mirror_board, next_player_stack, current_player_stack, eval_func, depth))
+        mirror_key = str((mirror_board, next_player, current_player, eval_func, depth))
         mirror_key_hash = hashlib.sha256(mirror_key.encode()).hexdigest()
         GameState.memo[mirror_key_hash] = value
 
