@@ -416,13 +416,14 @@ class GameState:
 
         return maxEval, bestMove
     
-    def minimax(self, state, depth, alpha, beta, maximizingPlayer, player, opponent):
+    def minimax(self, state, depth, alpha, beta, maximizingPlayer, player, opponent, eval_func) -> tuple:
         if depth == 0 or state.verify_win():
-            return state.eval()
+            return eval_func(state, depth), None
         
         if (state.board.get_board(), depth) in GameState.memo:
-            return GameState.memo[(state.board.get_board(), depth)]
+            return GameState.memo[(state.board.get_board(), depth)], None
 
+        bestMove = None
         if maximizingPlayer:
             maxEval = float('-inf')
             for move in state.board.get_valid_moves(state.get_current_player()):
@@ -438,13 +439,15 @@ class GameState:
                     new_state.select_cell(initial_position)
                     new_state.make_move(destination)
 
-                eval = new_state.minimax(new_state, depth-1, alpha, beta, False, player, opponent)
-                maxEval = max(maxEval, eval)
+                eval, _ = new_state.minimax(new_state, depth-1, alpha, beta, False, player, opponent)
+                if eval > maxEval:
+                    maxEval = eval
+                    bestMove = move
                 alpha = max(alpha, eval)
                 if beta <= alpha:
                     break
             GameState.memo[(state.board.get_board(), depth)] = maxEval
-            return maxEval
+            return maxEval, bestMove
         else:
             minEval = float('inf')
             for move in state.board.get_valid_moves(state.get_current_player()):
@@ -460,10 +463,12 @@ class GameState:
                     new_state.select_cell(initial_position)
                     new_state.make_move(destination)
 
-                eval = new_state.minimax(new_state, depth-1, alpha, beta, True, player, opponent)
-                minEval = min(minEval, eval)
+                eval, _ = new_state.minimax(new_state, depth-1, alpha, beta, True, player, opponent)
+                if eval < minEval:
+                    minEval = eval
+                    bestMove = move
                 beta = min(beta, eval)
                 if beta <= alpha:
                     break
             GameState.memo[(state.board.get_board(), depth)] = minEval
-            return minEval
+            return minEval, bestMove
