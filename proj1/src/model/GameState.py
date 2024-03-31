@@ -241,8 +241,7 @@ class GameState:
         else:
             selectable_cells = bot.get_cells()
 
-            random_select = random.choice(selectable_cells)
-            cell = tuple(int(num) for num in random_select)
+            cell = random.choice(list(selectable_cells))
 
             self.select_cell(cell)
 

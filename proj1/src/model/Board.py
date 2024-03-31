@@ -322,9 +322,9 @@ class Board:
         valid_moves = [Move((None, None), cell, True) for cell in self.placeable_cells if player.has_saved_pieces()]
 
         # Represents moves with board piece
-        board_moves = [Move(tuple(int(num) for num in cell), move) 
+        board_moves = [Move(cell, move) 
                for cell in movable_cells 
-               for possible_move in [self.get_possible_moves(tuple(int(num) for num in cell))] 
+               for possible_move in [self.get_possible_moves(cell)] 
                for move in possible_move if possible_move is not None]
 
         board_moves.sort(key=lambda move: len(self.get_possible_moves(move.get_origin())), reverse=False) # It will search through the ones with less moves first so it might prune extra moves
@@ -340,9 +340,9 @@ class Board:
         valid_moves = [Move((None, None), cell, True) for cell in self.placeable_cells if player.has_saved_pieces()]
 
         # Represents moves with board piece
-        board_moves = [Move(tuple(int(num) for num in cell), move) 
+        board_moves = [Move(cell, move) 
                for cell in movable_cells 
-               for possible_move in [self.get_possible_moves(tuple(int(num) for num in cell))] 
+               for possible_move in [self.get_possible_moves(cell)] 
                for move in possible_move if possible_move is not None]
 
         valid_moves.extend(board_moves)
