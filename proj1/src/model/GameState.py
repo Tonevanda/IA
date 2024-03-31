@@ -3,7 +3,7 @@ from model.MCTS import MCTS
 from model.Move import Move
 from controller.GameController import GameController
 from view.GameView import GameView
-from config import PIECE_ORANGE, MEDIUM_BOT_DEPTH, HARD_BOT_DEPTH, PLAYER_INT_DEPTH, MCTS_ITERATIONS
+from config import PIECE_ORANGE, MEDIUM_BOT_DEPTH, HARD_BOT_DEPTH, PLAYER_HINT_DEPTH, MCTS_ITERATIONS
 from typing import Dict
 from collections import defaultdict
 import random
@@ -190,36 +190,18 @@ class GameState:
         return self.get_current_player().is_bot()
     
     def handle_hint(self, player):
-        hint = self.get_hint(player)
+        if(player.get_hint() != None):
+            return
+        hint = self.get_hint()
         player.set_hint(hint)
 
-    def get_hint(self, player) -> tuple:
-        best_value = float('-inf')
-        best_move = None
-        best_moves_list = []
-        for move in self.board.get_valid_moves(player):
-            new_state = self.copy()
-            initial_position = move.get_origin()
-            destination = move.get_destination()
-            
-            if(move.is_from_personal_stack()):
-                new_state.select_saved_player_stack(new_state.get_current_player())
-                new_state.place_saved_piece(destination, new_state.get_current_player())
-            else:
-                new_state.select_cell(initial_position)
-                new_state.make_move(destination)
-            
-            move_value = self.negamax(new_state, PLAYER_INT_DEPTH - 1, float('-inf'), float('inf'), 1, self.eval_hard)
-            #print("Move: ", move, "Value: ", move_value)
+    def get_hint(self) -> tuple:
+        state = self.copy()
+        best_value, best_move = self.negamax(state, PLAYER_HINT_DEPTH, float('-inf'), float('inf'), 1, self.eval_hard)
 
-            if move_value == best_value:
-                best_moves_list.append(move)
-            elif move_value > best_value:
-                best_value = move_value
-                best_moves_list = [move]
-                
-        best_move = random.choice(best_moves_list)
-        print("Hinted Move: ", best_move, " Value: ", best_value)
+        initial_position = best_move.get_origin()
+        destination = best_move.get_destination()
+
         return best_move
     
     def handle_mcts_bot(self, bot):
