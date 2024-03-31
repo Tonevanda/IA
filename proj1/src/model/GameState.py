@@ -351,33 +351,38 @@ class GameState:
         next_player = state.get_next_player()
 
         board = state.board.get_board()
-        #board_hash = self.hash_board(board)
-        key = str((board, current_player, next_player, eval_func, depth))
+        key = str((board, repr(current_player), repr(next_player), eval_func, depth))
         key_hash = hashlib.sha256(key.encode()).hexdigest()
         GameState.memo[key_hash] = value
 
-        opponent_key = str((board, next_player, current_player, eval_func, depth))
+        opponent_key = str((board, repr(next_player), repr(current_player), eval_func, depth))
         opponent_key_hash = hashlib.sha256(opponent_key.encode()).hexdigest()
         GameState.memo[opponent_key_hash] = -value
 
         mirror_board = state.board.get_mirror_board(board)
-        #mirror_board_hash = self.hash_board(mirror_board)
-        mirror_key = str((mirror_board, next_player, current_player, eval_func, depth))
+        mirror_key = str((mirror_board, repr(current_player), repr(next_player), eval_func, depth))
         mirror_key_hash = hashlib.sha256(mirror_key.encode()).hexdigest()
         GameState.memo[mirror_key_hash] = value
 
-        inverse_board = state.board.get_inverse_board(board)
-        #inverse_board_hash = self.hash_board(inverse_board)
-        inverse_key = str((inverse_board, next_player_stack, current_player_stack, eval_func, depth))
-        inverse_key_hash = hashlib.sha256(inverse_key.encode()).hexdigest()
-        GameState.memo[inverse_key_hash] = -value
+        opponent_mirror_key = str((mirror_board, repr(next_player), repr(current_player), eval_func, depth))
+        opponent_mirror_key_hash = hashlib.sha256(opponent_mirror_key.encode()).hexdigest()
+        GameState.memo[opponent_mirror_key_hash] = -value
+
+        #inverse_board = state.board.get_inverse_board(board)
+        #inverse_key = str((inverse_board, repr(next_player), repr(current_player), eval_func, depth))
+        #inverse_key_hash = hashlib.sha256(inverse_key.encode()).hexdigest()
+        #GameState.memo[inverse_key_hash] = -value
+
+        #opponent_inverse_key = str((inverse_board, repr(current_player), repr(next_player), eval_func, depth))
+        #opponent_inverse_key_hash = hashlib.sha256(opponent_inverse_key.encode()).hexdigest()
+        #GameState.memo[opponent_inverse_key_hash] = value
 
     def negamax(self, state: 'GameState', depth: int, alpha: int, beta: int, color: int, eval_func) -> tuple:
         if depth == 0 or state.verify_win():
             return color * eval_func(state, depth), None
 
         GameState.states_evaluated += 1
-        key = str((state.board.get_board(), state.get_current_player().get_stack_count(), state.get_next_player().get_stack_count(), eval_func.__name__, depth))
+        key = str((state.board.get_board(), repr(state.get_current_player()), repr(state.get_next_player()), eval_func.__name__, depth))
         key_hash = hashlib.sha256(key.encode()).hexdigest()
         if key_hash in GameState.memo:
             GameState.states_avoided += 1

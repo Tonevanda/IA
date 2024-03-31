@@ -116,3 +116,6 @@ class Player:
     # Defines the string representation of the player when printed
     def __str__(self) -> str:
         return self.color + ' ' + self.player_type
+    
+    def __repr__(self) -> str:
+        return self.color + ' stack: ' + str(self.stack_pieces)
