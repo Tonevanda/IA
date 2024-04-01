@@ -5,11 +5,13 @@ class PlayerView:
         self.player = player
         self.font = pygame.font.Font(None, 36)
 
+    # Draw the player's name
     def draw_name(self, window, position, color):
         name = str(self.player)
         name_surface = self.font.render(name, True, color)  # Create a surface with the player's name
-        window.blit(name_surface, position)  # Draw the name at position (20, 20)
+        window.blit(name_surface, position)
 
+    # Draw the player's stack
     def draw_stack(self, window, position, color):
         pygame.draw.rect(window, (0, 0, 0), position, 3)
 
@@ -24,10 +26,12 @@ class PlayerView:
         # Draw stack count
         window.blit(stack_count_text, text_rect.topleft)  # Draw the stack count
 
+    # Draw the selected stack
     def draw_selected_stack(self, window, position):
         if self.player.stack_selected:
             pygame.draw.rect(window, (255, 255, 0), position)
 
+    # Draw the lightbulb button
     def draw_lightbulb_button(self, window, position, color):
         # Draw the button
         pygame.draw.rect(window, color, position)

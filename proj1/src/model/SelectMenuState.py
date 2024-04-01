@@ -13,9 +13,11 @@ class SelectMenuState:
         self.controller = SelectMenuController(self)
         self.view = SelectMenuView(self)
 
+    # Start the game with the selected players and board size
     def start_game(self):
         self.state_manager.start_game(BOARD_SIZES[self.selected_size], Player('Orange', self.player_types[self.selected_orange]), Player('Blue', self.player_types[self.selected_blue]))
 
+    # Update the selected player 1
     def update_selected_orange(self, player):
         match player:
             case "Player":
@@ -29,6 +31,7 @@ class SelectMenuState:
             case "MCTS Bot":
                 self.selected_orange = 4
     
+    # Update the selected player 2
     def update_selected_blue(self, player):
         match player:
             case "Player":
@@ -42,6 +45,7 @@ class SelectMenuState:
             case "MCTS Bot":
                 self.selected_blue = 4
     
+    # Update the selected board size
     def update_selected_size(self, size):
         self.selected_size = size
 

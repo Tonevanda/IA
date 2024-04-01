@@ -15,5 +15,5 @@ class EndState:
         self.state.to_quit()
 
     def run(self, window):
-        self.endView.draw(window, self.winner)
+        self.endView.draw(window, self.winner) # Calls the draw method from the EndView class with the winner so it can be displayed
         self.endController.handle_event()

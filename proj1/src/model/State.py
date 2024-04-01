@@ -10,13 +10,16 @@ class State:
         self.current_state = MainMenuState(self)
         self.config = Config()
 
+    # Update the screen size in the config
     def handle_screen_size(self, window: object) -> None:
         width, height = window.get_width(), window.get_height()
         self.config.set_screen_size(width, height)
 
+    # Get the screen size from the config
     def get_screen_size(self) -> tuple:
         return self.config.get_screen_size()
     
+    # Get the cell size from the config
     def get_cell_size(self) -> int:
         return self.config.get_cell_size()
 

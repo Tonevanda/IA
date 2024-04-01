@@ -4,6 +4,7 @@ class MainMenuView:
     def __init__(self):
         pass
 
+    # Draws the main menu
     def draw(self, window):
         window.fill((255, 255, 255))
         font = pygame.font.Font(None, 36)
