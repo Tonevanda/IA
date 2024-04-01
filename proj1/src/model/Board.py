@@ -319,15 +319,18 @@ class Board:
         movable_cells = player.get_cells()
         player.clear_controlled_cells()
 
-        valid_moves = [Move((None, None), cell, True) for cell in self.placeable_cells if player.has_saved_pieces()]
+        if player.has_saved_pieces():
+            valid_moves = [Move((None, None), cell, True) for cell in self.placeable_cells]
+        else:
+            valid_moves = []
 
-        # Represents moves with board piece
+        possible_moves = {cell: self.get_possible_moves(cell) for cell in movable_cells}
         board_moves = [Move(cell, move) 
-               for cell in movable_cells 
-               for possible_move in [self.get_possible_moves(cell)] 
-               for move in possible_move if possible_move is not None]
+                    for cell in movable_cells 
+                    for move in possible_moves[cell] if possible_moves[cell] is not None]
 
-        board_moves.sort(key=lambda move: len(self.get_possible_moves(move.get_origin())), reverse=False) # It will search through the ones with less moves first so it might prune extra moves
+        board_moves.sort(key=lambda move: len(possible_moves[move.get_origin()]), reverse=False)
+        
         valid_moves.extend(board_moves)
         player.update_controlled_cells([move.get_destination() for move in valid_moves])
 
