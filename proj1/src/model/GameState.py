@@ -408,15 +408,16 @@ class GameState:
         opponent_key_hash = hashlib.sha256(opponent_key.encode()).hexdigest()
         GameState.memo[opponent_key_hash] = -value # Adds the negative value to the memo
 
-        mirror_board = state.board.get_mirror_board(board)
+        mirror_board = state.board.get_mirror_board(board) # Mirrors the board to save the same board, but mirrored and improve performance
         mirror_key = str((mirror_board, repr(current_player), repr(next_player), eval_func, depth))
         mirror_key_hash = hashlib.sha256(mirror_key.encode()).hexdigest()
         GameState.memo[mirror_key_hash] = value
 
-        opponent_mirror_key = str((mirror_board, repr(next_player), repr(current_player), eval_func, depth))
+        opponent_mirror_key = str((mirror_board, repr(next_player), repr(current_player), eval_func, depth)) # Same as before, but for the mirrored board
         opponent_mirror_key_hash = hashlib.sha256(opponent_mirror_key.encode()).hexdigest()
         GameState.memo[opponent_mirror_key_hash] = -value
-
+    
+    # Negamax algorithm used to find the best move for the medium bot, as it's a zero-sum game, it's the same as the minimax algorithm, but with less code
     def negamax(self, state: 'GameState', depth: int, alpha: int, beta: int, color: int, eval_func) -> tuple:
         if depth == 0 or state.verify_win():
             return color * eval_func(state, depth), None
@@ -424,7 +425,7 @@ class GameState:
         GameState.states_evaluated += 1
         key = str((state.board.get_board(), repr(state.get_current_player()), repr(state.get_next_player()), eval_func.__name__, depth))
         key_hash = hashlib.sha256(key.encode()).hexdigest()
-        if key_hash in GameState.memo:
+        if key_hash in GameState.memo: # If the value is already in the memo, return it
             GameState.states_avoided += 1
             return GameState.memo[key_hash], None
 
@@ -446,18 +447,19 @@ class GameState:
             if value > maxEval:
                 maxEval = value
                 best_moves = [move]
-            elif value == maxEval:
+            elif value == maxEval: # This is used for the bot not to be deterministic
                 best_moves.append(move)
             alpha = max(alpha, value)
-            if alpha >= beta:
+            if alpha >= beta: # Alpha beta cut
                 GameState.branches_pruned_total += 1
                 GameState.branches_pruned_move += 1
                 break
 
-        self.add_to_memo(state, depth, maxEval, eval_func.__name__)
+        self.add_to_memo(state, depth, maxEval, eval_func.__name__) # Adds the value to the memo
 
         return maxEval, random.choice(best_moves)
     
+    # Minimax algorithm used to find the best move for the hard bot and the hints for the player
     def minimax(self, state, depth, alpha, beta, maximizingPlayer, eval_func):
         if depth == 0 or state.verify_win():
             return eval_func(state, depth), None
@@ -465,11 +467,11 @@ class GameState:
         GameState.states_evaluated += 1
         key = str((state.board.get_board(), repr(state.get_current_player()), repr(state.get_next_player()), eval_func.__name__, depth))
         key_hash = hashlib.sha256(key.encode()).hexdigest()
-        if key_hash in GameState.memo:
+        if key_hash in GameState.memo: # If the value is already in the memo, return it
             GameState.states_avoided += 1
             return GameState.memo[key_hash], None
 
-        best_move = None
+        best_moves = []
 
         if maximizingPlayer:
             maxEval = float('-inf')
@@ -488,14 +490,16 @@ class GameState:
                 eval, _ = new_state.minimax(new_state, depth-1, alpha, beta, False, eval_func)
                 if eval > maxEval:
                     maxEval = eval
-                    best_move = move
+                    best_moves = [move]
+                elif eval == maxEval: # This is used for the bot not to be deterministic
+                    best_moves.append(move)
                 alpha = max(alpha, eval)
                 if beta <= alpha:
                     GameState.branches_pruned_total += 1
                     GameState.branches_pruned_move += 1
                     break
             GameState.memo[(state.board.get_board(), depth)] = maxEval
-            return maxEval, best_move
+            return maxEval, random.choice(best_moves)
         else:
             minEval = float('inf')
             for move in state.board.get_valid_moves(state.get_current_player()):
@@ -513,11 +517,13 @@ class GameState:
                 eval, _ = new_state.minimax(new_state, depth-1, alpha, beta, True, eval_func)
                 if eval < minEval:
                     minEval = eval
-                    best_move = move
+                    best_moves = [move]
+                elif eval == minEval: # This is used for the bot not to be deterministic
+                    best_moves.append(move)
                 beta = min(beta, eval)
                 if beta <= alpha:
                     GameState.branches_pruned_total += 1
                     GameState.branches_pruned_move += 1
                     break
             self.add_to_memo(state, depth, minEval, eval_func.__name__)
-            return minEval, best_move
+            return minEval, random.choice(best_moves)

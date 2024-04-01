@@ -304,9 +304,10 @@ class Board:
         stack >>= (num_pieces-1)*2 # Get the top piece of the stack
         return (stack&0b11) == color # Return if the top piece of the stack is the player's color
     
-    def get_valid_moves(self, player) -> np.ndarray:
+    # Returns all the valid moves for a given player
+    def get_valid_moves(self, player: 'Player') -> np.ndarray:
         movable_cells = player.get_cells()
-        player.clear_controlled_cells()
+        player.clear_controlled_cells() # Clear the controlled cells of the player
 
         if player.has_saved_pieces():
             valid_moves = [Move((None, None), cell, True) for cell in self.placeable_cells]
@@ -318,13 +319,14 @@ class Board:
                     for cell in movable_cells 
                     for move in possible_moves[cell] if possible_moves[cell] is not None]
 
-        board_moves.sort(key=lambda move: len(possible_moves[move.get_origin()]), reverse=False)
+        board_moves.sort(key=lambda move: len(possible_moves[move.get_origin()]), reverse=False) # Sort the moves, using the smaller stacks first since they have less possible moves
         
         valid_moves.extend(board_moves)
-        player.update_controlled_cells([move.get_destination() for move in valid_moves])
+        player.update_controlled_cells([move.get_destination() for move in valid_moves]) # Update the controlled cells of the player with the new ones
 
         return np.array(valid_moves)
     
+    # Returns all the valid moves for a given player without considering the order, used for the MCTS
     def get_valid_unordered_moves(self, player) -> np.ndarray:
         movable_cells = player.get_cells()
         player.clear_controlled_cells()
@@ -342,6 +344,7 @@ class Board:
 
         return np.array(valid_moves)
     
+    # Returns the number of pieces in a given stack
     def enemy_pieces_in_stack(self, stack: int, player: 'Player') -> int:
         num_pieces = self.get_stack_size(stack)
         enemy_pieces = 0
@@ -351,37 +354,11 @@ class Board:
                 enemy_pieces += 1
         return enemy_pieces
 
+    # Returns the number of enemy pieces controlled by the player. Used for a heuristic
     def get_enemy_pieces_in_my_control(self, player: 'Player') -> int:
         total = 0
         for cell in player.get_cells():
             stack = self.get_stack(cell)
             total += self.enemy_pieces_in_stack(stack, player)
-        return total
-    
-    def get_controlled_cells(self, player: 'Player', opponent: 'Player') -> int:
-        total = 0
-        for cell in player.get_cells():
-            if cell in opponent.get_controlled_cells():
-                total += 1
-        return total
-
-    def eval_board(self, player: 'Player', opponent: 'Player') -> int:
-        total = 0
-        player_cells = player.get_cells()
-
-        for cell in player_cells:
-            stack = self.get_stack(cell)
-            num_pieces = self.get_stack_size(stack)
-
-            for i in range(num_pieces):
-                piece = (stack & (0b11 << (i*2))) >> (i*2)
-                if piece == opponent.get_color_bits():
-                    total += 1
-
-            if cell in opponent.get_controlled_cells():
-                total -= 1
-
-            total += num_pieces
-
         return total
             
