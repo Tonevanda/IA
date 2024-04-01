@@ -368,24 +368,31 @@ class Board:
             stack = self.get_stack(cell)
             total += self.enemy_pieces_in_stack(stack, player)
         return total
+    
+    def get_controlled_cells(self, player: 'Player', opponent: 'Player') -> int:
+        total = 0
+        for cell in player.get_cells():
+            if cell in opponent.get_controlled_cells():
+                total += 1
+        return total
 
-    def eval_board(self, player: 'Player') -> int:
+    def eval_board(self, player: 'Player', opponent: 'Player') -> int:
         total = 0
         player_cells = player.get_cells()
 
         for cell in player_cells:
             stack = self.get_stack(cell)
-            stack_size = self.get_stack_size(stack)
-            enemy_pieces = self.enemy_pieces_in_stack(stack, player)
-            valid_moves = self.get_possible_moves(cell)
-            if (len(valid_moves) % 4 == 0):
-                movable = stack_size*4 - enemy_pieces*4
-            elif (len(valid_moves) % 3 == 0):
-                movable = stack_size*3 - enemy_pieces*3
-            elif (len(valid_moves) % 2 == 0):
-                movable = stack_size*2 - enemy_pieces*2
+            num_pieces = self.get_stack_size(stack)
 
-            total += stack_size + enemy_pieces + movable
-            
+            for i in range(num_pieces):
+                piece = (stack & (0b11 << (i*2))) >> (i*2)
+                if piece == opponent.get_color_bits():
+                    total += 1
+
+            if cell in opponent.get_controlled_cells():
+                total -= 1
+
+            total += num_pieces
+
         return total
             
