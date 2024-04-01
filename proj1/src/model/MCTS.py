@@ -1,23 +1,32 @@
 import math
 import random
+import heapq
 
 class Node:
     def __init__(self, state, parent=None) -> None:
         self.state = state
         self.parent = parent
-        self.children = []
+        self.children = []      # This is a heap so we can get the child with the highest UCB score in O(1)
+        self.num_children = 0
+        self.untried_moves = state.get_current_player().get_tuple_cells()
         self.visits = 0
         self.value = 0
+        self.hash = hash(state)
 
+    # Used for the heap comparisons
+    def __lt__(self, other) -> bool:
+        return self.ucb_score() < other.ucb_score()
+    
     def is_fully_expanded(self) -> bool:
-        return len(self.children) == len(self.state.get_current_player().get_tuple_cells())
+        return self.num_children == len(self.untried_moves)
     
     def is_terminal(self) -> bool:
         return self.state.verify_win()
 
     def add_child(self, child_state) -> 'Node':
         child = Node(child_state, parent=self)
-        self.children.append(child)
+        heapq.heappush(self.children, (-child.ucb_score(), child))
+        self.num_children += 1
         return child
     
     # TODO: May need to change the weight
@@ -28,7 +37,9 @@ class Node:
             return (self.value / self.visits) + scale * math.sqrt(2 * math.log(self.parent.visits) / self.visits)
     
     def select_child(self) -> 'Node':
-        return max(self.children, key=lambda child: child.ucb_score())
+        _, child = heapq.heappop(self.children)
+        heapq.heappush(self.children, (-child.ucb_score(), child))
+        return child
     
     def update(self, value) -> None:
         self.value += value
@@ -39,16 +50,19 @@ class Node:
 class MCTS:
     def __init__(self, state) -> None:
         self.root = Node(state)
+        self.transposition_table = {self.root.hash: self.root}
 
     def select_node_to_expand(self) -> Node:
         current = self.root
         while not current.is_terminal() and current.is_fully_expanded():
             current = current.select_child()
+            if current.hash in self.transposition_table:
+                current = self.transposition_table[current.hash]
         return current
     
-    def expand(self, node) -> None:
+    def expand(self, node) -> Node:
         legal_moves = node.state.board.get_valid_unordered_moves(node.state.get_current_player())
-        tried_moves = {child.state.get_last_move() for child in node.children}
+        tried_moves = {child[1].state.get_last_move() for child in node.children}
         untried_moves = [move for move in legal_moves if move not in tried_moves]
         if untried_moves:
             move = random.choice(untried_moves)
@@ -61,7 +75,9 @@ class MCTS:
                 new_state.select_cell(move.get_origin())
                 new_state.make_move(move.get_destination())
             new_state.unselect_cell()
-            return node.add_child(new_state)
+            new_child = node.add_child(new_state)
+            self.transposition_table[new_child.hash] = new_child
+            return new_child
         else:
             return random.choice(node.children)
 
@@ -80,8 +96,7 @@ class MCTS:
             else:
                 new_state.select_cell(initial_position)
                 new_state.make_move(destination)
-            
-            
+                 
             move_value = new_state.eval_medium(new_state,0)
 
             if(move_value == 10000):
@@ -125,10 +140,10 @@ class MCTS:
             node.update(value)
             node = node.parent
     
-    def search(self, num_iterations=1000) -> Node:
+    def search(self, num_iterations) -> Node:
         for _ in range(num_iterations):
             node = self.select_node_to_expand()
             leaf = self.expand(node)
             simulation_result = self.simulate(leaf)
             self.backpropagate(leaf, simulation_result)
-        return max(self.root.children, key=lambda child: child.value / child.visits)
+        return heapq.nlargest(1, self.root.children, key=lambda child: child[1].value / child[1].visits)[0][1]

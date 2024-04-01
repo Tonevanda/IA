@@ -279,9 +279,7 @@ class GameState:
             self.handle_hard_bot(bot)
             return True
         elif(bot.is_mcts_bot()):
-            start_time = time.time()
             self.handle_mcts_bot(bot)
-            print("Time elapsed: ", time.time() - start_time)
             return True
         return False
 
