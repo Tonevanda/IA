@@ -17,15 +17,19 @@ class Config:
         self.screen_width = 800
         self.screen_height = 600
 
+    # updates the board size
     def update_board_size(self, size: int) -> None:
         self.board_size = size
 
+    # returns the screen size
     def get_screen_size(self):
         return self.screen_width, self.screen_height
     
+    # returns the cell size based on the board size chosen
     def get_cell_size(self):
         return CELL_SIZE[self.board_size]
 
+    # sets the screen size
     def set_screen_size(self, width, height):
         self.screen_width = width
         self.screen_height = height

@@ -4,9 +4,11 @@ class GameController:
     def __init__(self, game_state):
         self.game_state = game_state
 
+    # Checks if the given cell clicked is a valid cell
     def clicked_piece(self, cell):
         return self.game_state.board.is_valid_cell(cell)
 
+    # Checks if the given player stack is clicked
     def clicked_saved_player_stack(self, player):
         mouse_pos = pygame.mouse.get_pos()
         window_width, _ = pygame.display.get_surface().get_size()
@@ -18,6 +20,7 @@ class GameController:
 
         return check_rect.collidepoint(mouse_pos)
     
+    # Checks if the player hint is clicked
     def clicked_player_hint(self, player):
         mouse_pos = pygame.mouse.get_pos()
         window_width, _ = pygame.display.get_surface().get_size()
@@ -29,23 +32,25 @@ class GameController:
 
         return hint.collidepoint(mouse_pos)
 
+    # Handles the click event. Returns true if a move is made
     def handle_click(self, cell, player):
-        if self.clicked_saved_player_stack(player):
-            self.game_state.unselect_cell()
-            self.game_state.handle_saved_player_stack_selection(player)
-        elif self.clicked_player_hint(player):
-            self.game_state.unselect_cell()
-            self.game_state.handle_hint(player)
+        if self.clicked_saved_player_stack(player): # If the player stack was clicked
+            self.game_state.unselect_cell() # Unselect the cell
+            self.game_state.handle_saved_player_stack_selection(player) # Calls the handler for the player stack
+        elif self.clicked_player_hint(player): # If the hint button was clicked
+            self.game_state.unselect_cell() # Unselect the cell
+            self.game_state.handle_hint(player) # Calls the handler for the hint
         else:    
-            if self.clicked_piece(cell):
-                if (self.game_state.no_cell_selected()):
-                    self.game_state.select_cell(cell)
+            if self.clicked_piece(cell): # If the cell clicked is a a piece
+                if (self.game_state.no_cell_selected()): # If no cell is selected
+                    self.game_state.select_cell(cell) # Select the cell
                 else:
-                    return self.game_state.make_move(cell)
+                    return self.game_state.make_move(cell) # If a cell is already selected, make the move and return True if a move was made
             else:
-                self.game_state.unselect_cell()
-        return False       
+                self.game_state.unselect_cell() # Unselect the cell if no piece was clicked
+        return False
 
+    # Handles the events that happen during the game
     def handle_event(self, player):
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
