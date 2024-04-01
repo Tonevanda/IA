@@ -145,7 +145,6 @@ class GameState:
             self.board.current_possible_moves = self.board.get_possible_moves(cell)
             self.board.selected_cell = cell
         else:
-            print("Invalid cell selection")
             self.unselect_cell()
 
     def handle_saved_player_stack_selection(self, player):
@@ -251,7 +250,7 @@ class GameState:
 
     def handle_hard_bot(self, bot):
         state = self.copy()
-        best_value, best_move = self.negamax(state, HARD_BOT_DEPTH, float('-inf'), float('inf'), 1, self.eval_hard)
+        _, best_move = self.negamax(state, HARD_BOT_DEPTH, float('-inf'), float('inf'), 1, self.eval_hard)
 
         if best_move != None:
             initial_position = best_move.get_origin()
@@ -263,7 +262,9 @@ class GameState:
             else:
                 self.select_cell(initial_position)
                 self.make_move(destination)
+            print("Move made: ", best_move)
         else:
+            print("Playing random")
             self.handle_easy_bot(bot)
             
     def handle_bot(self, bot):
@@ -325,10 +326,20 @@ class GameState:
     def eval_hidden_enemy_pieces(self, state, current_player, next_player) -> int:
         return state.board.get_enemy_pieces_in_my_control(current_player) - state.board.get_enemy_pieces_in_my_control(next_player)
 
+    #def eval_medium(self, state, depth) -> int:
+    #    if state.verify_win():
+    #        return 10000 + depth
+    #    return  state.eval_total_pieces(state.get_current_player(), state.get_next_player())
+
     def eval_medium(self, state, depth) -> int:
         if state.verify_win():
             return 10000 + depth
-        return  state.eval_total_pieces(state.get_current_player(), state.get_next_player())
+        return ((5 * state.eval_total_pieces(state.get_current_player(), state.get_next_player())) + 
+                (3 * state.eval_cells(state.get_current_player(), state.get_next_player())) + 
+                (state.eval_controlled_cells(state.get_current_player(), state.get_next_player())//2) + 
+                (state.eval_stack(state.get_current_player(), state.get_next_player())) + 
+                (4 * state.eval_hidden_enemy_pieces(state, state.get_current_player(), state.get_next_player()))
+                )
 
     # TODO: Implement a better evaluation function
     # 1. Quantos espaços está a controlar na board (quantos mais melhor)
@@ -341,10 +352,10 @@ class GameState:
         if state.verify_win():
             return 10000 + depth
         return ((5 * state.eval_total_pieces(state.get_current_player(), state.get_next_player())) + 
-                state.eval_cells(state.get_current_player(), state.get_next_player()) + 
-                state.eval_controlled_cells(state.get_current_player(), state.get_next_player()) + 
-                state.eval_stack(state.get_current_player(), state.get_next_player()) + 
-                4 * state.eval_hidden_enemy_pieces(state, state.get_current_player(), state.get_next_player())
+                (3 * state.eval_cells(state.get_current_player(), state.get_next_player())) + 
+                (2 * state.eval_controlled_cells(state.get_current_player(), state.get_next_player())) + 
+                (state.eval_stack(state.get_current_player(), state.get_next_player())) + 
+                (4 * state.eval_hidden_enemy_pieces(state, state.get_current_player(), state.get_next_player()))
                 )
     
     def add_to_memo(self, state: 'GameState', depth: int, value: int, eval_func: str) -> None:
@@ -352,6 +363,7 @@ class GameState:
         next_player = state.get_next_player()
 
         board = state.board.get_board()
+
         key = str((board, repr(current_player), repr(next_player), eval_func, depth))
         key_hash = hashlib.sha256(key.encode()).hexdigest()
         GameState.memo[key_hash] = value
@@ -368,15 +380,6 @@ class GameState:
         opponent_mirror_key = str((mirror_board, repr(next_player), repr(current_player), eval_func, depth))
         opponent_mirror_key_hash = hashlib.sha256(opponent_mirror_key.encode()).hexdigest()
         GameState.memo[opponent_mirror_key_hash] = -value
-
-        #inverse_board = state.board.get_inverse_board(board)
-        #inverse_key = str((inverse_board, repr(next_player), repr(current_player), eval_func, depth))
-        #inverse_key_hash = hashlib.sha256(inverse_key.encode()).hexdigest()
-        #GameState.memo[inverse_key_hash] = -value
-
-        #opponent_inverse_key = str((inverse_board, repr(current_player), repr(next_player), eval_func, depth))
-        #opponent_inverse_key_hash = hashlib.sha256(opponent_inverse_key.encode()).hexdigest()
-        #GameState.memo[opponent_inverse_key_hash] = value
 
     def negamax(self, state: 'GameState', depth: int, alpha: int, beta: int, color: int, eval_func) -> tuple:
         if depth == 0 or state.verify_win():

@@ -329,7 +329,7 @@ class Board:
                     for cell in movable_cells 
                     for move in possible_moves[cell] if possible_moves[cell] is not None]
 
-        board_moves.sort(key=lambda move: len(possible_moves[move.get_origin()]), reverse=True)
+        board_moves.sort(key=lambda move: len(possible_moves[move.get_origin()]), reverse=False)
         
         valid_moves.extend(board_moves)
         player.update_controlled_cells([move.get_destination() for move in valid_moves])
