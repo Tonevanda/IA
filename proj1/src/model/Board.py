@@ -16,13 +16,12 @@ class Board:
         
         self.selected_cell = None
         self.current_possible_moves = None
-    
-    def update_board(self, new_board: 'Board') -> None:
-        self.board = new_board
 
+    # Returns the board
     def get_board(self) -> int:
         return self.board
     
+    # Returns the mirrored board
     def get_mirror_board(self, board: int) -> int:
         new_board = 0b0
         size_total = self.size * self.size
@@ -31,9 +30,11 @@ class Board:
             new_board |= stack << ((size_total - i - 1) * self.stack_size * 2)
         return new_board
     
+    # Returns a stack given a bitboard position
     def get_bitboard_stack(self, bitboard_pos: int, board: int) -> int:
         return (board >> (bitboard_pos * self.stack_size * 2)) & self.stack_mask
 
+    # Returns the inverse of the board, where the colors are inverted
     def get_inverse_board(self, board) -> int:
         new_board = 0b0
         for i in range(self.size * self.size):
@@ -49,13 +50,12 @@ class Board:
             else:
                 new_board |= stack << (i * self.stack_size * 2)
         return new_board
-
+    
+    # returns the size of the board
     def get_size(self) -> int:
         return self.size
     
-    def get_total_cells(self) -> int:
-        return self.size * self.size
-    
+    # Copy the board
     def copy(self, game_state) -> 'Board':
         new_board = Board.__new__(Board)  # Create a new Board instance without calling __init__
         new_board.game_state = game_state  # Copy game_state
@@ -68,6 +68,7 @@ class Board:
         new_board.current_possible_moves = list(self.current_possible_moves) if self.current_possible_moves else None  # Create a new list from current_possible_moves
         return new_board
 
+    # returns a random cell from the list of placeable cells
     def get_random_cell(self) -> tuple:
         return random.choice(list(self.placeable_cells))
 
