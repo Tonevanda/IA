@@ -37,6 +37,8 @@ class Node:
             return (self.value / self.visits) + scale * math.sqrt(2 * math.log(self.parent.visits) / self.visits)
     
     def select_child(self) -> 'Node':
+        if len(self.children) == 0:
+            return None
         _, child = heapq.heappop(self.children)
         heapq.heappush(self.children, (-child.ucb_score(), child))
         return child
@@ -56,6 +58,9 @@ class MCTS:
         current = self.root
         while not current.is_terminal() and current.is_fully_expanded():
             current = current.select_child()
+            if current is None:
+                current = self.root
+                break
             if current.hash in self.transposition_table:
                 current = self.transposition_table[current.hash]
         return current
