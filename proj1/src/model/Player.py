@@ -17,10 +17,6 @@ class Player:
     def get_cells(self) -> set:
         return self.cells
     
-    # Get the cells that the player has pieces on as a list of tuples
-    def get_tuple_cells(self) -> list[tuple[int, int]]:
-        return [(tuple(int(num) for num in cell)) for cell in self.cells]
-    
     # Add a cell to the player's cells
     def add_cell(self, cell: tuple) -> None:
         self.cells.add(cell)  # Add the cell to the player's cells

@@ -145,6 +145,7 @@ class GameState:
             self.board.current_possible_moves = self.board.get_possible_moves(cell)
             self.board.selected_cell = cell
         else:
+            print("Invalid cell selection")
             self.unselect_cell()
 
     def handle_saved_player_stack_selection(self, player):
@@ -197,12 +198,9 @@ class GameState:
 
     def get_hint(self) -> tuple:
         state = self.copy()
-        best_value, best_move = self.negamax(state, PLAYER_HINT_DEPTH, float('-inf'), float('inf'), 1, self.eval_hard)
+        _, best_move = self.negamax(state, PLAYER_HINT_DEPTH, float('-inf'), float('inf'), 1, self.eval_hard)
 
-        if best_move != None:
-            initial_position = best_move.get_origin()
-            destination = best_move.get_destination()
-        else:
+        if best_move == None:
             best_move = self.board.get_valid_moves(self.get_current_player())[0]
 
         return best_move
@@ -212,6 +210,7 @@ class GameState:
         best_node = mcts.search(num_iterations=MCTS_ITERATIONS)
 
         best_move = best_node.state.get_last_move()
+        print(f"Best move: {best_move}")
         if best_move.is_from_personal_stack():
             self.select_saved_player_stack(bot)
             self.place_saved_piece(best_move.get_destination(), bot)
@@ -318,6 +317,8 @@ class GameState:
         next_player = state.get_next_player()
         return current_player.get_total_pieces() - next_player.get_total_pieces()
     
+    
+
     # TODO: Implement a better evaluation function
     # 1. Quantos espaços está a controlar na board (quantos mais melhor)
     # 2. Quantos espaços tem na board (quantos mais melhor)
@@ -336,7 +337,7 @@ class GameState:
         controlled_cells_difference = len(current_player.get_controlled_cells()) - len(next_player.get_controlled_cells())
         stack_difference = current_player.get_stack_count() - next_player.get_stack_count() # Apesar de já estar a ser levada em conta, uma peça guardada é relevante
 
-        hidden_enemy_pieces = state.board.get_enemy_pieces_in_my_control(current_player)
+        hidden_enemy_pieces = state.board.get_enemy_pieces_in_my_control(current_player) - state.board.get_enemy_pieces_in_my_control(next_player)
 
         #board_evaluation = state.board.eval_board(current_player, next_player)
 
@@ -387,7 +388,7 @@ class GameState:
             return GameState.memo[key_hash], None
 
         maxEval = float('-inf')
-        bestMove = None
+        best_moves = []
         for move in state.board.get_valid_moves(state.get_current_player()):
             new_state = state.copy()
             initial_position = move.get_origin()
@@ -400,11 +401,13 @@ class GameState:
                 new_state.select_cell(initial_position)
                 new_state.make_move(destination)
 
-            eval = -new_state.negamax(new_state, depth-1, -beta, -alpha, -color, eval_func)[0]
-            if eval > maxEval:
-                maxEval = eval
-                bestMove = move
-            alpha = max(alpha, eval)
+            value = -new_state.negamax(new_state, depth-1, -beta, -alpha, -color, eval_func)[0]
+            if value > maxEval:
+                maxEval = value
+                best_moves = [move]
+            elif value == maxEval:
+                best_moves.append(move)
+            alpha = max(alpha, value)
             if beta <= alpha:
                 GameState.branches_pruned_total += 1
                 GameState.branches_pruned_move += 1
@@ -412,7 +415,7 @@ class GameState:
 
         self.add_to_memo(state, depth, maxEval, eval_func.__name__)
 
-        return maxEval, bestMove
+        return maxEval, random.choice(best_moves)
     
     def minimax(self, state, depth, alpha, beta, maximizingPlayer, player, opponent):
         if depth == 0 or state.verify_win():

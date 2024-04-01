@@ -8,7 +8,7 @@ class Node:
         self.parent = parent
         self.children = []      # This is a heap so we can get the child with the highest UCB score in O(1)
         self.num_children = 0
-        self.untried_moves = state.get_current_player().get_tuple_cells()
+        self.untried_moves = state.get_current_player().get_cells()
         self.visits = 0
         self.value = 0
         self.hash = hash(state)
@@ -26,6 +26,7 @@ class Node:
     def add_child(self, child_state) -> 'Node':
         child = Node(child_state, parent=self)
         heapq.heappush(self.children, (-child.ucb_score(), child))
+
         self.num_children += 1
         return child
     
@@ -63,7 +64,9 @@ class MCTS:
     def expand(self, node) -> Node:
         legal_moves = node.state.board.get_valid_unordered_moves(node.state.get_current_player())
         tried_moves = {child[1].state.get_last_move() for child in node.children}
+        #print("Tried moves: ", tried_moves)
         untried_moves = [move for move in legal_moves if move not in tried_moves]
+        #print("Untried moves: ", untried_moves)
         if untried_moves:
             move = random.choice(untried_moves)
             new_state = node.state.copy()
@@ -75,65 +78,36 @@ class MCTS:
                 new_state.select_cell(move.get_origin())
                 new_state.make_move(move.get_destination())
             new_state.unselect_cell()
+
             new_child = node.add_child(new_state)
             self.transposition_table[new_child.hash] = new_child
             return new_child
         else:
             return random.choice(node.children)
 
-    def get_good_move(self, state, moves):
-        best_value = float('-inf')
-        best_move = None
-        best_moves_list = []
-        for move in moves:
-            new_state = state.copy()
-            initial_position = move.get_origin()
-            destination = move.get_destination()
-            
-            if(move.is_from_personal_stack()):
-                new_state.select_saved_player_stack(new_state.get_current_player())
-                new_state.place_saved_piece(destination, new_state.get_current_player())
-            else:
-                new_state.select_cell(initial_position)
-                new_state.make_move(destination)
-                 
-            move_value = new_state.eval_medium(new_state,0)
-
-            if(move_value == 10000):
-                best_moves_list = [move]
-                best_value = move_value
-                break
-
-            if move_value == best_value:
-                best_moves_list.append(move)
-            elif move_value > best_value:
-                best_value = move_value
-                best_moves_list = [move]
-
-        best_move = random.choice(best_moves_list)
-        return best_move    
-
     def simulate(self, node) -> int:
-        state = node.state.copy()
-        while not state.verify_win():
-            current_player = state.get_current_player()
-            valid_moves = state.board.get_valid_moves(current_player)
+        #state = node.state.copy()
+        last_move = node.state.get_last_move()
+        while not node.state.verify_win():
+            current_player = node.state.get_current_player()
+            valid_moves = node.state.board.get_valid_moves(current_player)
             move = random.choice(valid_moves)
             #move = self.get_good_move(state, valid_moves)
             if(move.is_from_personal_stack()):
-                state.select_saved_player_stack(current_player)
-                state.place_saved_piece(move.get_destination(), current_player)
+                node.state.select_saved_player_stack(current_player)
+                node.state.place_saved_piece(move.get_destination(), current_player)
             else:
-                state.select_cell(move.get_origin())
-                state.make_move(move.get_destination())
-            state.unselect_cell()
+                node.state.select_cell(move.get_origin())
+                node.state.make_move(move.get_destination())
+            node.state.unselect_cell()
 
-            if(state.verify_win()):
+            if(node.state.verify_win()):
                 break
-            state.next_turn()
+            node.state.next_turn()
 
         # If the state is terminal, return who won
-        return 1 if state.get_current_player() == self.root.state.get_current_player() else -1
+        node.state.last_move = last_move
+        return 1 if node.state.get_current_player() == self.root.state.get_current_player() else -1
     
     def backpropagate(self, node, value) -> None:
         while node is not None:
@@ -146,4 +120,11 @@ class MCTS:
             leaf = self.expand(node)
             simulation_result = self.simulate(leaf)
             self.backpropagate(leaf, simulation_result)
-        return heapq.nlargest(1, self.root.children, key=lambda child: child[1].value / child[1].visits)[0][1]
+
+        best_node = heapq.nlargest(1, self.root.children, key=lambda child: child[1].value / child[1].visits)[0][1]
+
+        best_node_parent = best_node.parent
+
+        print("Is root:" , best_node_parent == self.root)
+        
+        return best_node
