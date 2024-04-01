@@ -309,15 +309,26 @@ class GameState:
 
     def to_quit(self):
         self.state.to_quit()
+    
+    def eval_total_pieces(self, current_player, next_player) -> int:
+        return current_player.get_total_pieces() - next_player.get_total_pieces()
+
+    def eval_cells(self, current_player, next_player) -> int:
+        return len(current_player.get_cells()) - len(next_player.get_cells())
+    
+    def eval_controlled_cells(self, current_player, next_player) -> int:
+        return len(current_player.get_controlled_cells()) - len(next_player.get_controlled_cells())
+    
+    def eval_stack(self, current_player, next_player) -> int:
+        return current_player.get_stack_count() - next_player.get_stack_count()
+    
+    def eval_hidden_enemy_pieces(self, state, current_player, next_player) -> int:
+        return state.board.get_enemy_pieces_in_my_control(current_player) - state.board.get_enemy_pieces_in_my_control(next_player)
 
     def eval_medium(self, state, depth) -> int:
         if state.verify_win():
             return 10000 + depth
-        current_player = state.get_current_player()
-        next_player = state.get_next_player()
-        return current_player.get_total_pieces() - next_player.get_total_pieces()
-    
-    
+        return  state.eval_total_pieces(state.get_current_player(), state.get_next_player())
 
     # TODO: Implement a better evaluation function
     # 1. Quantos espaços está a controlar na board (quantos mais melhor)
@@ -329,22 +340,13 @@ class GameState:
     def eval_hard(self, state, depth) -> int:
         if state.verify_win():
             return 10000 + depth
-
-        current_player = state.get_current_player()
-        next_player = state.get_next_player()
-
-        cells_difference = len(current_player.get_cells()) - len(next_player.get_cells())
-        controlled_cells_difference = len(current_player.get_controlled_cells()) - len(next_player.get_controlled_cells())
-        stack_difference = current_player.get_stack_count() - next_player.get_stack_count() # Apesar de já estar a ser levada em conta, uma peça guardada é relevante
-
-        hidden_enemy_pieces = state.board.get_enemy_pieces_in_my_control(current_player) - state.board.get_enemy_pieces_in_my_control(next_player)
-
-        #board_evaluation = state.board.eval_board(current_player, next_player)
-
-        total_pieces_difference = current_player.get_total_pieces() - next_player.get_total_pieces() # Já leva em conta a stack difference
-
-        return cells_difference + controlled_cells_difference + 5*total_pieces_difference + 4*hidden_enemy_pieces + stack_difference
-
+        return ((5 * state.eval_total_pieces(state.get_current_player(), state.get_next_player())) + 
+                state.eval_cells(state.get_current_player(), state.get_next_player()) + 
+                state.eval_controlled_cells(state.get_current_player(), state.get_next_player()) + 
+                state.eval_stack(state.get_current_player(), state.get_next_player()) + 
+                4 * state.eval_hidden_enemy_pieces(state, state.get_current_player(), state.get_next_player())
+                )
+    
     def add_to_memo(self, state: 'GameState', depth: int, value: int, eval_func: str) -> None:
         current_player = state.get_current_player()
         next_player = state.get_next_player()
