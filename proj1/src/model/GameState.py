@@ -239,7 +239,7 @@ class GameState:
 
     def handle_medium_bot(self, bot):
         state = self.copy()
-        best_value, best_move = self.minimax(state, MEDIUM_BOT_DEPTH, float('-inf'), float('inf'), True, self.eval_medium)
+        best_value, best_move = self.negamax(state, MEDIUM_BOT_DEPTH, float('-inf'), float('inf'), 1, self.eval_medium)
 
         if best_move != None:
             initial_position = best_move.get_origin()
