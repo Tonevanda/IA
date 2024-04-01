@@ -11,7 +11,7 @@ class Board:
         self.stack_size = STACK_MAX_SIZES[size]
         self.stack_mask = STACK_MASKS[size]
         self.board = 0b0
-        self.placeable_cells = []
+        self.placeable_cells = set()
         self.make_board()
         
         self.selected_cell = None
@@ -73,12 +73,12 @@ class Board:
         new_board.stack_mask = self.stack_mask  # Copy stack_mask
         new_board.board = self.board  # Copy board state
         new_board.selected_cell = self.selected_cell  # Copy selected_cell
-        new_board.placeable_cells = list(self.placeable_cells) if self.placeable_cells else None  # Create a new list from placeable_cells
+        new_board.placeable_cells = set(self.placeable_cells) if self.placeable_cells else None  # Create a new list from placeable_cells
         new_board.current_possible_moves = list(self.current_possible_moves) if self.current_possible_moves else None  # Create a new list from current_possible_moves
         return new_board
 
     def get_random_cell(self) -> tuple:
-        return random.choice(self.placeable_cells)
+        return random.choice(list(self.placeable_cells))
 
     # Checks if the cell is on the edge of the board
     def is_on_edge(self, row: int, col: int) -> bool:
@@ -119,7 +119,7 @@ class Board:
                         first = False
                     else:
                         self.make_stack(PIECE_EMPTY)
-                self.placeable_cells.append((row, col))
+                self.placeable_cells.add((row, col))
             row_counter += 1
             if row_counter % 2 == 0:
                 current_color = PIECE_BLUE
@@ -144,7 +144,7 @@ class Board:
                 bitmap_position = self.get_bitmap_position(i, j)
                 if(self.is_outside_board((i,j))): # If the cell is outside the hexagon
                     self.substitute_stack(bitmap_position, self.stack_mask) # Remove the stack from the board by adding a NONE stack (0b11)
-                    self.placeable_cells.remove((i,j)) # Remove the cell from the placeable cells
+                    self.placeable_cells.discard((i, j)) # Remove the cell from the placeable cells
 
     # Checks if a cell is outside the hexagon
     def is_outside_board(self, cell: tuple) -> bool:
@@ -369,44 +369,23 @@ class Board:
             total += self.enemy_pieces_in_stack(stack, player)
         return total
 
-    def get_valid_destinations(self, player, movable_cells) -> np.ndarray:
-        # Represents moves with board piece
-        valid_destinations = [move
-            for cell in movable_cells 
-            for possible_move in [self.get_possible_moves(tuple(int(num) for num in cell))] 
-            for move in possible_move if possible_move is not None]
-
-        # Represents moves with saved pieces
-        if player.has_saved_pieces():
-            valid_destinations.extend(cell for cell in self.placeable_cells)
-
-        return np.array(valid_destinations)
-
-    def eval_board(self, player: 'Player', opponent: 'Player') -> int:
+    def eval_board(self, player: 'Player') -> int:
         total = 0
-        opponent_cells = opponent.get_cells()
         player_cells = player.get_cells()
-        opponent_destinations = self.get_valid_destinations(opponent, opponent_cells)
 
         for cell in player_cells:
             stack = self.get_stack(cell)
-            total += self.enemy_pieces_in_stack(stack, player) # Enemy pieces in my control
-            if cell in opponent_destinations: # If the opponent can move to my cell and take my pieces (bad)
-                total -= 5
-                if(self.get_stack_size(stack) == self.stack_size): # If the stack is full it's an even worse position
-                    total -= 5
-                total += 2 * self.get_stack_size(stack)
+            stack_size = self.get_stack_size(stack)
+            enemy_pieces = self.enemy_pieces_in_stack(stack, player)
+            valid_moves = self.get_possible_moves(cell)
+            if (len(valid_moves) % 4 == 0):
+                movable = stack_size*4 - enemy_pieces*4
+            elif (len(valid_moves) % 3 == 0):
+                movable = stack_size*3 - enemy_pieces*3
+            elif (len(valid_moves) % 2 == 0):
+                movable = stack_size*2 - enemy_pieces*2
 
-        player_destinations = self.get_valid_destinations(player, player_cells)
-
-        for cell in opponent_cells:
-            stack = self.get_stack(cell)
-            total -= self.enemy_pieces_in_stack(stack, opponent)
-            if cell in player_destinations: # Pieces that can see each other are bad for the player, because it will be the opponent turn and they can take the pieces
-                total += 4
-                if(self.get_stack_size(stack) == self.stack_size):
-                    total += 4
-                total -= 2 * self.get_stack_size(stack)
+            total += stack_size + enemy_pieces + movable
             
         return total
             

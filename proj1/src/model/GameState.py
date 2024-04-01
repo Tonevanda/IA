@@ -334,11 +334,11 @@ class GameState:
     def eval_medium(self, state, depth) -> int:
         if state.verify_win():
             return 10000 + depth
-        return ((5 * state.eval_total_pieces(state.get_current_player(), state.get_next_player())) + 
+        return ((4 * state.eval_total_pieces(state.get_current_player(), state.get_next_player())) + 
                 (3 * state.eval_cells(state.get_current_player(), state.get_next_player())) + 
-                (state.eval_controlled_cells(state.get_current_player(), state.get_next_player())//2) + 
+                (2 * state.eval_controlled_cells(state.get_current_player(), state.get_next_player())) + 
                 (state.eval_stack(state.get_current_player(), state.get_next_player())) + 
-                (4 * state.eval_hidden_enemy_pieces(state, state.get_current_player(), state.get_next_player()))
+                (state.board.eval_board(state.get_current_player()) - state.board.eval_board(state.get_next_player()))
                 )
 
     # TODO: Implement a better evaluation function
@@ -351,11 +351,11 @@ class GameState:
     def eval_hard(self, state, depth) -> int:
         if state.verify_win():
             return 10000 + depth
-        return ((5 * state.eval_total_pieces(state.get_current_player(), state.get_next_player())) + 
+        return ((4 * state.eval_total_pieces(state.get_current_player(), state.get_next_player())) + 
                 (3 * state.eval_cells(state.get_current_player(), state.get_next_player())) + 
                 (2 * state.eval_controlled_cells(state.get_current_player(), state.get_next_player())) + 
                 (state.eval_stack(state.get_current_player(), state.get_next_player())) + 
-                (4 * state.eval_hidden_enemy_pieces(state, state.get_current_player(), state.get_next_player()))
+                (state.eval_hidden_enemy_pieces(state, state.get_current_player(), state.get_next_player()))
                 )
     
     def add_to_memo(self, state: 'GameState', depth: int, value: int, eval_func: str) -> None:
