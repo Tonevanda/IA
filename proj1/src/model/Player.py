@@ -21,18 +21,23 @@ class Player:
     def add_cell(self, cell: tuple) -> None:
         self.cells.add(cell)  # Add the cell to the player's cells
 
+    # Remove a cell from the player's cells
     def remove_cell(self, cell: tuple) -> None:
         self.cells.discard(cell)  # Remove the cell from the player's cells using the discard method
 
+    # returns the controlled cells of a player
     def get_controlled_cells(self) -> set:
         return self.controlled_cells
     
+    # Add a cell to the player's controlled cells
     def add_controlled_cell(self, cell: tuple) -> None:
         self.controlled_cells.add(cell)
 
+    # Updates the controlled cells of a player
     def update_controlled_cells(self, cells) -> None:
         self.controlled_cells = set(cells)
 
+    # Clears the controlled cells of a player
     def clear_controlled_cells(self) -> None:
         self.controlled_cells.clear()
 
@@ -88,24 +93,31 @@ class Player:
     def is_hard_bot(self) -> bool:
         return self.player_type == 'Hard Bot'
     
+    # Check if the player's an MCTS bot
     def is_mcts_bot(self) -> bool:
         return self.player_type == 'MCTS Bot'
     
+    # Get the player's hint
     def get_hint(self) -> 'Move':
         return self.hint
     
+    # Set the player's hint
     def set_hint(self, hint: 'Move') -> None:
         self.hint = hint
 
+    # Clear the player's hint
     def clear_hint(self) -> None:
         self.hint = None
 
+    # Get the total pieces the player has
     def get_total_pieces(self) -> int:
         return self.total_pieces
     
+    # Add a piece to the player's total pieces
     def add_piece(self) -> None:
         self.total_pieces += 1
     
+    # Remove a piece from the player's total pieces
     def remove_piece(self) -> None:
         self.total_pieces -= 1
 
@@ -113,5 +125,6 @@ class Player:
     def __str__(self) -> str:
         return self.color + ' ' + self.player_type
     
+    # Defines the string representation of the player, used for the memoization
     def __repr__(self) -> str:
         return self.color + ' stack: ' + str(self.stack_pieces)
