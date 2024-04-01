@@ -15,8 +15,6 @@ class Board:
         self.make_board()
         
         self.selected_cell = None
-
-        # TODO: Refactor so this is inside Player.py
         self.current_possible_moves = None
     
     def update_board(self, new_board: 'Board') -> None:
@@ -32,13 +30,6 @@ class Board:
             stack = self.get_bitboard_stack(i, board)
             new_board |= stack << ((size_total - i - 1) * self.stack_size * 2)
         return new_board
-    
-    # TODO: Maybe implement this
-    def get_transpose_board(self, board) -> int:
-        pass
-    
-    def get_rotated_board(self, board) -> int:
-        pass
     
     def get_bitboard_stack(self, bitboard_pos: int, board: int) -> int:
         return (board >> (bitboard_pos * self.stack_size * 2)) & self.stack_mask

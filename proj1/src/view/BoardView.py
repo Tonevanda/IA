@@ -11,11 +11,6 @@ class BoardView:
         self.orange = orange
         self.blue = blue
 
-    def update_starting_cell(self, starting_cell):
-        (starting_cell_x, starting_cell_y) = starting_cell
-        self.starting_cell_x = starting_cell_x
-        self.starting_cell_y = starting_cell_y
-
     def draw_hint(self, window):
         window_width, window_height = window.get_size()
         starting_cell_x = (window_width - self.board.size * self.cell_size) // 2

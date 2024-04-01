@@ -30,7 +30,6 @@ class Node:
         self.num_children += 1
         return child
     
-    # TODO: May need to change the weight
     def ucb_score(self, scale=1 / math.sqrt(2)) -> float:
         if self.visits == 0:
             return float('inf')

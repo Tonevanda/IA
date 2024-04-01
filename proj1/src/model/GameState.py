@@ -14,9 +14,7 @@ import time
 
 class GameState:
     # Hashmap that stores, for each pair of board, and pair of player stacks, and depth, the value of the state
-    # ((board hash, player1_stack, player2_stack), eval_func, depth) -> value
-    # TODO: Could be a hash of the whole state (hash256 has 2^256 so probability of collisions is low and it is better and more efficient)
-    #memo: Dict[Tuple[Tuple[str, int, int], str, int], int] = defaultdict(int)
+    # ((board, player1, player2, eval_func, depth) -> value
     memo: Dict[str, int] = defaultdict(int)
     states_evaluated = 0
     states_avoided = 0
@@ -37,8 +35,9 @@ class GameState:
 
         self.turn = 1
 
+    # Copy constructor since we can't use the deepcopy method
     def copy(self):
-        new_state = GameState.__new__(GameState)
+        new_state = GameState.__new__(GameState) # This way it creates a new GameState without initializing it
         new_state.state = self.state 
         new_state.turn = self.turn
         new_state.orange = copy.deepcopy(self.orange)
@@ -46,9 +45,11 @@ class GameState:
         new_state.board = self.board.copy(new_state)
         return new_state
 
+    # Returns the last move
     def get_last_move(self):
         return self.last_move
 
+    # Returns the starting cell, it's used to calculate the positions of the display
     def get_starting_cell(self):
         cell_size = self.state.get_cell_size()
 
@@ -60,10 +61,6 @@ class GameState:
         start_x = (screen_width - board_width) // 2
         start_y = (screen_height - board_height) // 2
         return (start_x, start_y)
-
-    def update_starting_cell(self, starting_cell):
-        self.starting_cell = starting_cell
-        self.gameView.update_starting_cell(starting_cell)
 
     def is_outside_board(self, cell_x, cell_y):
         return cell_x >= self.board.get_size() or cell_y >= self.board.get_size() or cell_x < 0 or cell_y < 0

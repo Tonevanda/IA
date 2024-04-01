@@ -11,9 +11,6 @@ class GameView:
         self.orange_view = PlayerView(orange)
         self.blue_view = PlayerView(blue)
 
-    def update_starting_cell(self, starting_cell):
-        self.board_view.update_starting_cell(starting_cell)
-
     def draw_turn(self, window):
         font = pygame.font.Font(None, 36)
         current_player = self.game_state.get_current_player()
