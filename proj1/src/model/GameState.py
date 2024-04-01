@@ -125,50 +125,61 @@ class GameState:
             self.blue.add_cell(cell)
             self.blue.add_piece()
     
+    # Adds a cell to a player's list of cells
     def add_to_player_cells(self, cell, player):
         player.add_cell(cell)
 
+    # Removes a cell from a player's list of cells
     def remove_from_player_cells(self, cell, player):
         player.remove_cell(cell)
 
+    # Removes a piece from a players sum of total pieces
     def remove_piece(self, player):
         player.remove_piece()
     
+    # Unselects the cell currently selected
     def unselect_cell(self):
         self.board.current_possible_moves = None
         self.board.selected_cell = None
         self.unselect_saved_player_stack(self.get_current_player())
 
+    # Checks if nothing is selected (a cell or the player stack)
     def no_cell_selected(self):
         return (self.board.current_possible_moves == None and self.get_current_player().stack_selected == False)
     
+    # Checks if a cell can be selected by the current player
     def can_select_cell(self, cell):
         stack = self.board.get_stack(cell)
         return (self.board.is_player_stack(stack, self.get_current_player()))
 
+    # Selects a cell or unselects if the player can't select any cell
     def select_cell(self, cell):
         if self.can_select_cell(cell):
             self.board.current_possible_moves = self.board.get_possible_moves(cell)
             self.board.selected_cell = cell
-        else:
+        else: 
             self.unselect_cell()
 
+    # Handles the selection of a player's stack
     def handle_saved_player_stack_selection(self, player):
-        if player.stack_selected:
+        if player.stack_selected: # If the player's stack is already selected, unselect it
             self.unselect_saved_player_stack(player)
-        else:
+        else: #  If the player's stack is not selected, select it
             self.select_saved_player_stack(player)
 
+    # Selects a player's stack
     def select_saved_player_stack(self, player):
-        if(not player.has_saved_pieces()):
+        if(not player.has_saved_pieces()): # If the player has no pieces in their stack they shouldn't be able to select the stack
             return
         player.select_stack()
     
+    # Unselects a player's stack
     def unselect_saved_player_stack(self, player):
         player.unselect_stack()
 
+    # Places a piece from the player's stack to a given cell and returns True if the move was made
     def place_saved_piece(self, cell, player):
-        if player.stack_selected:
+        if player.stack_selected: # They can only place the piece if the stack is selected
             self.board.place_saved_piece(cell, player)
             self.remove_from_player_stack()
             self.last_move = Move((None, None), cell, True)
@@ -176,57 +187,64 @@ class GameState:
             return True
         return False
 
-    def move_stack(self, cell, player):
+    # Moves a stack to a given cell and returns True if the move was made
+    def move_stack(self, cell):
         made_move = False
-        if cell in self.board.current_possible_moves:
-            self.board.make_move(cell, player)
+        if cell in self.board.current_possible_moves: # If the cell is a valid move
+            self.board.make_move(cell)
             made_move = True
             self.last_move = Move(self.board.selected_cell, cell)
         self.unselect_cell()
         return made_move
 
+    # Calls the appropriate method to make a move, depending on if it's from the stack or from the board
     def make_move(self, cell):
         player = self.get_current_player()
         if(player.stack_selected):
             return self.place_saved_piece(cell, player)
         else:
-            return self.move_stack(cell, player)
+            return self.move_stack(cell)
 
+    # Returns if the current player is a bot
     def is_bot_playing(self):
         return self.get_current_player().is_bot()
     
+    # Handles the hint for the player
     def handle_hint(self, player):
-        if(player.get_hint() != None):
+        if(player.get_hint() != None): # If the player already has a hint
             return
-        hint = self.get_hint()
-        player.set_hint(hint)
+        hint = self.get_hint() # Get the hint
+        player.set_hint(hint) # Set the hint for the player
 
+    # Returns the hint for the player using the minimax algorithm and the heuristics used in the hard bot, but with it's own depth
     def get_hint(self) -> tuple:
         state = self.copy()
-        _, best_move = self.negamax(state, PLAYER_HINT_DEPTH, float('-inf'), float('inf'), 1, self.eval_hard)
+        _, best_move = self.minimax(state, PLAYER_HINT_DEPTH, float('-inf'), float('inf'), True, self.eval_hard)
 
         if best_move == None:
-            best_move = self.board.get_valid_moves(self.get_current_player())[0]
+            best_move = self.board.get_valid_moves(self.get_current_player())[0] # if it can't find a move, it returns the first valid move (only if depth is 0)
 
         return best_move
     
+    # Handles the monte carlo tree search bot's move
     def handle_mcts_bot(self, bot):
-        mcts = MCTS(self.copy())
+        mcts = MCTS(self.copy()) # Create a new MCTS object with a copy of the current state
         best_node = mcts.search(num_iterations=MCTS_ITERATIONS)
 
         best_move = best_node.state.get_last_move()
-        if best_move.is_from_personal_stack():
+        if best_move.is_from_personal_stack(): # if it's from the personal stack, play the piece from the stack
             self.select_saved_player_stack(bot)
             self.place_saved_piece(best_move.get_destination(), bot)
-        else:
+        else: # if it's from the board, move the stack
             self.select_cell(best_move.get_origin())
             self.make_move(best_move.get_destination())
 
+    # Handles the easy bot's move
     def handle_easy_bot(self, bot):
-        if bot.has_saved_pieces():
+        if bot.has_saved_pieces(): # if it has a piece in a stack, randomly place it
             self.select_saved_player_stack(bot)
             self.place_saved_piece(self.board.get_random_cell(), bot)
-        else:
+        else: # else, pick a random cell and move it
             selectable_cells = bot.get_cells()
 
             cell = random.choice(list(selectable_cells))
@@ -235,13 +253,14 @@ class GameState:
 
             movable_cells = self.board.current_possible_moves
             random_move = random.choice(movable_cells)
-            self.move_stack(random_move, bot)
+            self.move_stack(random_move)
 
+    # Handles the medium bot's move
     def handle_medium_bot(self, bot):
         state = self.copy()
-        best_value, best_move = self.negamax(state, MEDIUM_BOT_DEPTH, float('-inf'), float('inf'), 1, self.eval_medium)
+        best_value, best_move = self.negamax(state, MEDIUM_BOT_DEPTH, float('-inf'), float('inf'), 1, self.eval_medium) # Calls negamax since the heuristics used in the eval_medium function are zero-sum
 
-        if best_move != None:
+        if best_move != None: 
             initial_position = best_move.get_origin()
             destination = best_move.get_destination()
             if(best_move.is_from_personal_stack()):
@@ -251,11 +270,12 @@ class GameState:
                 self.select_cell(initial_position)
                 self.make_move(destination)
         else:
-            self.handle_easy_bot(bot)
+            self.handle_easy_bot(bot) # if it can't find a move, play randomly (only if depth is 0)
 
+    # Handles the hard bot's move
     def handle_hard_bot(self, bot):
         state = self.copy()
-        _, best_move = self.minimax(state, HARD_BOT_DEPTH, float('-inf'), float('inf'), True, self.eval_hard)
+        _, best_move = self.minimax(state, HARD_BOT_DEPTH, float('-inf'), float('inf'), True, self.eval_hard) # Calls minimax with the heuristics used in the eval_hard function
 
         if best_move != None:
             initial_position = best_move.get_origin()
@@ -267,14 +287,13 @@ class GameState:
             else:
                 self.select_cell(initial_position)
                 self.make_move(destination)
-            #print("Move made: ", best_move)
         else:
-            #print("Playing random")
             self.handle_easy_bot(bot)
-            
+    
+    # Handle bot function that calls the appropriate method to make a move depending on the bot's difficulty
+    # Returns true if a move is made
     def handle_bot(self, bot):
         if(bot.is_easy_bot()):
-            #sleep(0.2)
             self.handle_easy_bot(bot)
             return True
         elif(bot.is_medium_bot()):
@@ -288,6 +307,7 @@ class GameState:
             return True
         return False
 
+    # Handles the player's move
     def handle_player(self):
         player = self.get_current_player()
         has_played = False
@@ -300,78 +320,93 @@ class GameState:
             GameState.branches_pruned_move = 0
             print("\n")
         else:
-            has_played = self.gameController.handle_event(player)
+            has_played = self.gameController.handle_event(player) # Calls the handle event in gameController to handle the player's input
 
-        if(has_played):
-            if(not player.is_bot()):
-                player.clear_hint()
-            if(not self.did_win()):
+        if(has_played): # If the player has played
+            if(not player.is_bot()): 
+                player.clear_hint() # If it was a human player, clear the hint
+            if(not self.did_win()): # If the game hasn't ended, go to the next turn
                 self.next_turn()
             has_played = False
 
+    # Run loop
     def run(self, window):
         self.handle_player()
         self.gameView.draw(window)
 
+    # Function used to quit the game
     def to_quit(self):
         self.state.to_quit()
     
+    # Heuristic function used to evaluate the state of the game. It returns the difference between the current player's total pieces and the next player's total pieces
+    # Having more pieces than your opponent is a good thing, as you win the game if your opponent can't move and, this way, they have less chance of capturing your stacks
     def eval_total_pieces(self, current_player, next_player) -> int:
         return current_player.get_total_pieces() - next_player.get_total_pieces()
 
+    # Heuristic function used to evaluate the state of the game. It returns the difference between the current player's cells and the next player's cells
+    # Having more cells than your opponent is a good thing, as you win the game if your opponent doesn't have any cell left (and any piece in the stack)
     def eval_cells(self, current_player, next_player) -> int:
         return len(current_player.get_cells()) - len(next_player.get_cells())
     
+    # Heuristic function used to evaluate the state of the game. It returns the difference between the current player's controlled cells and the next player's controlled cells
+    # Controlling more cells than your opponent will lead to more possible moves and more chances of capturing their stacks
     def eval_controlled_cells(self, current_player, next_player) -> int:
         return len(current_player.get_controlled_cells()) - len(next_player.get_controlled_cells())
     
+    # Heuristic function used to evaluate the state of the game. It returns the difference between the current player's cells controlled by the opponent and the opponent's cells controlled by the current player
+    # It's good to have cells looking at the opponent's cells, as it gives you more chances of capturing their stacks, but it's bad to have your cells controlled by the opponent as they can capture them
     def eval_cells_controlled_by_opponent(self, current_player, next_player) -> int:
         player_cells = current_player.get_cells()
         opponent_control = next_player.get_controlled_cells()
         opponent_cells = next_player.get_cells()
         player_control = current_player.get_controlled_cells()
 
-        return len(player_cells & opponent_cells) - len(opponent_control & player_control)
+        return -len(player_cells & opponent_control) + len(opponent_cells & player_control)
     
+    # Heuristic function used to evaluate the state of the game. It returns the difference between the current player's stack and the next player's stack
+    # Having more pieces in your stack is a good thing, as you can place them in the board and capture your opponent's stacks anywhere you want
     def eval_stack(self, current_player, next_player) -> int:
         return current_player.get_stack_count() - next_player.get_stack_count()
     
-    def eval_hidden_enemy_pieces(self, state, current_player, next_player) -> int:
+    # Heuristic function used to evaluate the state of the game. It returns the amount of enemy pieces are inside a player's stack
+    # Having enemy pieces inside your stack is a good thing, because this way the opponent can't move them and you can use them to move your stack even further
+    def eval_hidden_enemy_pieces(self, state, current_player) -> int:
         return state.board.get_enemy_pieces_in_my_control(current_player)
 
+    # Evaluation function for the medium bot. It uses 2 heuristics, if it's a win, it returns a high value, otherwise, it uses the total pieces heuristic
     def eval_medium(self, state, depth) -> int:
         if state.verify_win():
-            return 10000 + depth
+            return 10000 + depth # 10000 plus depth, so that it always chooses the move that wins the game in the least amount of turns
         return  state.eval_total_pieces(state.get_current_player(), state.get_next_player())
 
-
+    # Evaluation function for the hard bot. It uses 6 heuristics, if it's a win, it returns a high value, otherwise, it uses the total pieces, cells, controlled cells, stack, hidden enemy pieces and cells controlled by the opponent heuristics
     def eval_hard(self, state, depth) -> int:
         if state.verify_win():
-            #print("Winning state")
-            return 10000 + depth
+            return 10000 + depth # 10000 plus depth, so that it always chooses the move that wins the game in the least amount of turns
 
         return (
             (5*state.eval_total_pieces(state.get_current_player(), state.get_next_player())) +
             (4*state.eval_cells(state.get_current_player(), state.get_next_player())) + 
             (1*state.eval_controlled_cells(state.get_current_player(), state.get_next_player())) +
             (1*state.eval_stack(state.get_current_player(), state.get_next_player())) +
-            (4*state.eval_hidden_enemy_pieces(state, state.get_current_player(), state.get_next_player())) +
+            (4*state.eval_hidden_enemy_pieces(state, state.get_current_player())) +
             (2*state.eval_cells_controlled_by_opponent(state.get_current_player(), state.get_next_player()))
         )
     
+    # Function used for the memoization of the values of the states
     def add_to_memo(self, state: 'GameState', depth: int, value: int, eval_func: str) -> None:
         current_player = state.get_current_player()
         next_player = state.get_next_player()
 
         board = state.board.get_board()
 
-        key = str((board, repr(current_player), repr(next_player), eval_func, depth))
-        key_hash = hashlib.sha256(key.encode()).hexdigest()
-        GameState.memo[key_hash] = value
+        key = str((board, repr(current_player), repr(next_player), eval_func, depth)) # Creates a key with the board, the current player, the next player, the evaluation function and the depth
+        key_hash = hashlib.sha256(key.encode()).hexdigest() # Hashes the key for better performance 
+        GameState.memo[key_hash] = value # Adds the value to the memo
 
-        opponent_key = str((board, repr(next_player), repr(current_player), eval_func, depth))
+        opponent_key = str((board, repr(next_player), repr(current_player), eval_func, depth)) # Swaps the current player and the next player to save the same board, but for the opponent
         opponent_key_hash = hashlib.sha256(opponent_key.encode()).hexdigest()
-        GameState.memo[opponent_key_hash] = -value
+        GameState.memo[opponent_key_hash] = -value # Adds the negative value to the memo
 
         mirror_board = state.board.get_mirror_board(board)
         mirror_key = str((mirror_board, repr(current_player), repr(next_player), eval_func, depth))

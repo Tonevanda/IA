@@ -292,10 +292,8 @@ class Board:
         self.handle_stack_size_limit(new_destination_stack, destination_pos) # Call the function that will handle the stack size limit and the change of the destination stack in the board
 
     # Makes a move in the board
-    def make_move(self, pos: tuple, current_player: 'Player') -> None:
-        selected_stack = self.get_stack(self.selected_cell)
-        if(not self.is_empty_stack(selected_stack) and self.is_player_stack(selected_stack, current_player)):
-            self.transfer_pieces(self.selected_cell, pos)
+    def make_move(self, pos: tuple) -> None:
+        self.transfer_pieces(self.selected_cell, pos)
 
     # Given a cell, returns if it belongs to a given player
     def is_player_stack(self, stack: int, player: 'Player') -> bool:
