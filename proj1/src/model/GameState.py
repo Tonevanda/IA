@@ -62,6 +62,7 @@ class GameState:
         start_y = (screen_height - board_height) // 2
         return (start_x, start_y)
 
+    # Checks if a given cell is outside the board
     def is_outside_board(self, cell_x, cell_y):
         return cell_x >= self.board.get_size() or cell_y >= self.board.get_size() or cell_x < 0 or cell_y < 0
 
@@ -75,15 +76,19 @@ class GameState:
         if self.is_outside_board(cell_x, cell_y): return (-1,-1)
         return (cell_x, cell_y)
     
+    # Returns the current player
     def get_current_player(self):
         return self.orange if self.turn % 2 == 1 else self.blue
     
+    # Returns the next player
     def get_next_player(self):
         return self.orange if self.turn % 2 == 0 else self.blue
 
+    # Skips to the next turn
     def next_turn(self):
         self.turn += 1
 
+    # Checks if the game has ended and returns the value
     def did_win(self):
         if self.verify_win():
             winner = self.get_current_player()
@@ -96,18 +101,22 @@ class GameState:
             return True
         return False
 
+    # Verifies if the current player has won. It checks if the current player has no pieces in their stack and no cells, therefore, can't play
     def verify_win(self):
         next_player = self.get_next_player()
         return (next_player.get_stack_count() == 0 and len(next_player.get_cells()) == 0)
 
+    # Adds a piece to the current player's saved piece's stack
     def add_to_player_stack(self):
         current_player = self.get_current_player()
         current_player.add_stack_piece()
 
+    # Removes a piece from the current player's saved piece's stack
     def remove_from_player_stack(self):
         current_player = self.get_current_player()
         return current_player.remove_stack_piece()
     
+    # Adds a cell to a given player cell by the color of the piece
     def add_to_player_cells_color(self, cell, color):
         if color == PIECE_ORANGE:
             self.orange.add_cell(cell)
@@ -206,7 +215,6 @@ class GameState:
         best_node = mcts.search(num_iterations=MCTS_ITERATIONS)
 
         best_move = best_node.state.get_last_move()
-        print(f"Best move: {best_move}")
         if best_move.is_from_personal_stack():
             self.select_saved_player_stack(bot)
             self.place_saved_piece(best_move.get_destination(), bot)
@@ -448,6 +456,8 @@ class GameState:
                     best_move = move
                 alpha = max(alpha, eval)
                 if beta <= alpha:
+                    GameState.branches_pruned_total += 1
+                    GameState.branches_pruned_move += 1
                     break
             GameState.memo[(state.board.get_board(), depth)] = maxEval
             return maxEval, best_move
@@ -471,6 +481,8 @@ class GameState:
                     best_move = move
                 beta = min(beta, eval)
                 if beta <= alpha:
+                    GameState.branches_pruned_total += 1
+                    GameState.branches_pruned_move += 1
                     break
             self.add_to_memo(state, depth, minEval, eval_func.__name__)
             return minEval, best_move
